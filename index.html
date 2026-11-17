@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Медиатека «Рыба Моя»</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+@font-face{font-family:"ArticaPro";src:url("fonts/ArticaPro.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"ArticaPro";src:url("fonts/ArticaPro-Medium.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Futura New";src:url("fonts/FuturaNewBook-Reg.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Futura New";src:url("fonts/FuturaNewMedium-Reg.woff2") format("woff2");font-weight:500;font-display:swap}
+:root{--cream:#F9EFE3;--sand:#F3E3CF;--paper:#EFE3D3;--line:#E6D6C2;--line2:#D9C4AC;--ink:#3A2219;--ink2:#5C3F2C;--mute:#8A7465;--gold:#997234;--red:#B60E10;--blue:#104C82;--white:#FFFFFF;
+  --safe-b:max(env(safe-area-inset-bottom),var(--tg-safe-area-inset-bottom,0px));--safe-t:var(--tg-content-safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--cream);color:var(--ink)}
+body{font-family:"Futura New",Jost,"Century Gothic",Arial,sans-serif;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+button{font-family:inherit;color:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+input::placeholder{color:var(--mute)}
+.app{position:relative;max-width:560px;margin:0 auto;height:var(--tg-viewport-stable-height,100dvh);min-height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--cream)}
+.hd{position:relative;flex:none;overflow:hidden;padding-top:var(--safe-t)}
+.koi{position:absolute;right:-14px;top:-80px;width:132px;opacity:.95;pointer-events:none;-webkit-mask-image:linear-gradient(to left,#000 45%,transparent);mask-image:linear-gradient(to left,#000 45%,transparent)}
+.brand{position:relative;display:flex;flex-direction:column;gap:7px;padding:18px 16px 0}
+.brand img{height:22px;width:auto;align-self:flex-start;display:block}
+.kicker{font-family:ArticaPro,sans-serif;font-size:10px;letter-spacing:.36em;text-transform:uppercase;color:var(--gold)}
+.search{position:relative;display:flex;align-items:center;gap:10px;height:46px;margin:14px 16px 0;padding:0 4px 0 12px;background:var(--white);border:1px solid var(--ink)}
+.search input::-webkit-search-cancel-button,.search input::-webkit-search-decoration{-webkit-appearance:none;display:none}
+.search input{flex:1;min-width:0;height:44px;border:0;outline:none;background:transparent;font:inherit;font-size:16px;color:var(--ink)}
+.search button{flex:none;width:40px;height:40px;border:0;background:transparent;color:var(--ink2);font-size:22px;line-height:1}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:10px 16px 0;border:1px solid var(--ink)}
+.seg button{height:36px;border:0;background:transparent;font-size:13px;padding:0 4px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--white)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 16px 12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;height:36px;padding:0 14px;border:1px solid var(--line);background:var(--white);font-size:14px;white-space:nowrap}
+.chips button[aria-pressed=true]{background:var(--red);border-color:var(--red);color:var(--white)}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.tour{position:fixed;inset:0;z-index:60;background:var(--cream);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:var(--safe-b)}
+.tour .skip{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:16px;height:36px;padding:0 10px;border:0;background:transparent;font-size:13px;color:var(--mute);z-index:2}
+.tour .stage{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:56px 24px 12px}
+.tour h1{font-family:ArticaPro,sans-serif;font-weight:500;font-size:26px;line-height:1.12;margin:0;text-wrap:balance}
+.tour p{margin:0;font-size:15px;line-height:1.5;color:var(--ink2)}
+.tour .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.tour .mock{background:var(--white);padding:16px;display:flex;flex-direction:column;gap:10px}
+.tour .mock .trow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tour .chip{height:34px;padding:0 12px;border:1px solid var(--line);background:var(--white);font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.tour .chip.on{background:var(--red);border-color:var(--red);color:var(--white)}
+.tour .chip.dark{background:var(--ink);border-color:var(--ink);color:var(--white)}
+.tour .chip i{font-style:normal;font-size:11px;opacity:.6}
+.tour .field{height:46px;border:1px solid var(--ink);display:flex;align-items:center;gap:10px;padding:0 12px;font-size:15px;background:var(--white)}
+.tour .type{display:inline-block;overflow:hidden;white-space:nowrap;border-right:2px solid var(--red);width:0;animation:tType 1.6s steps(12,end) .5s forwards,tCaret .7s step-end infinite}
+.tour .say{align-self:flex-end;max-width:86%;padding:9px 12px;background:var(--ink);color:var(--white);font-size:14px;line-height:1.35}
+.tour .ans{align-self:flex-start;max-width:86%;padding:9px 12px;background:var(--cream);font-size:14px;line-height:1.35;color:var(--ink)}
+.tour .btnp{height:48px;background:var(--red);color:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;font-weight:500}
+.tour .btnp small{font-size:11px;font-weight:400;opacity:.85}
+.tour .thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tour .thumbs span{aspect-ratio:1;background:var(--sand);position:relative;overflow:hidden}
+.tour .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.tour .thumbs b{position:absolute;top:6px;right:6px;width:20px;height:20px;border:1.5px solid var(--ink);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:13px;line-height:1}
+.tour .thumbs b.ok{background:var(--red);border-color:var(--red);color:var(--white)}
+.tour .ft2{padding:3px 8px;border:1px solid var(--blue);color:var(--blue);font-size:12px}
+.tour .ft2.ok{background:var(--blue);color:var(--white)}
+.tour .ft2.nn{border-color:var(--line2);color:var(--mute)}
+.tour .foot{flex:none;display:flex;align-items:center;gap:10px;padding:12px 24px 20px}
+.tour .dots{flex:1;min-width:0;display:flex;gap:5px;overflow:hidden}
+.tour .dots i{flex:none;width:6px;height:6px;background:var(--line2)}
+.tour .dots i.on{background:var(--red);width:16px}
+.tour .foot button{flex:none;height:48px;padding:0 16px;border:1px solid var(--ink);background:transparent;font-size:15px}
+.tour .foot button.next{background:var(--ink);color:var(--white)}
+.tour .brands{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tour .brands div{background:var(--white);padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;font-size:13px;line-height:1.35;color:var(--ink2)}
+.tour .brands img{width:84px;height:84px;object-fit:contain}
+.tour .brands b{font-family:ArticaPro,sans-serif;font-weight:500;font-size:16px;color:var(--ink)}
+.tour .in>*{opacity:0;transform:translateY(10px);animation:tUp .5s ease forwards}
+.tour .in>*:nth-child(2){animation-delay:.08s}.tour .in>*:nth-child(3){animation-delay:.16s}.tour .in>*:nth-child(4){animation-delay:.24s}.tour .in>*:nth-child(5){animation-delay:.32s}
+.tour .intro{align-items:center;text-align:center;gap:14px}
+.tour .intro .logo{width:min(248px,62vw);display:flex;flex-direction:column;align-items:stretch}
+.tour .intro .logo img{display:block;width:100%;height:auto}
+.tour .intro .sign{opacity:0;transform:scale(.86) rotate(-4deg);clip-path:circle(0% at 50% 46%);animation:tSign 1.25s cubic-bezier(.2,.75,.2,1) .2s forwards}
+.tour .intro .wm{margin-top:9.6%;opacity:0;transform:translateY(14px);animation:tUp .7s cubic-bezier(.2,.75,.2,1) 1.15s forwards}
+.tour .intro .sub{margin-top:6.4%;opacity:0;transform:scale(1.12);animation:tSub .7s ease 1.55s forwards}
+.tour .intro .kick{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);opacity:0;animation:tUp .6s ease 1.9s forwards}
+.tour .intro .line{width:100%;height:10px;background:url(img/band.jpg) left center/auto 10px repeat-x;transform:scaleX(0);transform-origin:left;animation:tLine .9s ease 2.1s forwards}
+.tour .intro p{opacity:0;animation:tUp .6s ease 2.45s forwards;max-width:300px}
+.tour .intro~.foot{opacity:0;animation:tUp .6s ease 2.75s forwards}
+@media (prefers-reduced-motion:reduce){.tour .intro *,.tour .intro~.foot,.tour .in>*{animation:none!important;opacity:1!important;transform:none!important;clip-path:none!important}}
+@keyframes tUp{to{opacity:1;transform:none}}
+@keyframes tSign{0%{opacity:0;transform:scale(.86) rotate(-4deg);clip-path:circle(0% at 50% 46%)}15%{opacity:1}70%{transform:scale(1.03) rotate(0deg);clip-path:circle(75% at 50% 46%)}100%{opacity:1;transform:none;clip-path:circle(75% at 50% 46%)}}
+@keyframes tSub{to{opacity:1;transform:none}}
+@keyframes tLine{to{transform:scaleX(1)}}
+@keyframes tType{to{width:8.2ch}}
+@keyframes tCaret{50%{border-color:transparent}}
+@media (prefers-reduced-motion:reduce){.tour *{animation-duration:.01s!important;animation-delay:0s!important}}
+
+.chips button i{font-style:normal;font-size:11px;margin-left:6px;opacity:.6}
+.chips button.zero{color:var(--mute);background:transparent}
+.chips button.allb{border-color:var(--ink);background:var(--ink);color:var(--white)}
+.help h2{font-family:ArticaPro,sans-serif;font-weight:500;font-size:20px;line-height:1.15;margin:0}
+.help .step{margin-top:12px;padding:16px;background:var(--white);display:flex;flex-direction:column;gap:8px}
+.help .step p{margin:0;font-size:14px;line-height:1.45;color:var(--ink2)}
+.help .num{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.help .ex{display:flex;flex-wrap:wrap;gap:6px}
+.help .ex button{height:34px;padding:0 12px;border:1px solid var(--line2);background:var(--cream);font-size:13px}
+.help .say{padding:8px 12px;background:var(--cream);font-size:14px;color:var(--ink)}
+.band{flex:none;height:10px;background:url(img/band.jpg) left center/auto 10px repeat-x}
+.body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 20px}
+.sum{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:var(--ink2)}
+.sum span:last-child{font-size:12px;color:var(--mute);white-space:nowrap}
+.gh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:18px 0 10px}
+.gh h2{margin:0;font-family:ArticaPro,sans-serif;font-weight:400;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+.gh span{font-size:12px;color:var(--mute);white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{position:relative;background:var(--white);min-width:0}
+.tile.wide{grid-column:span 2}
+.tbtn{width:100%;border:0;padding:0;background:transparent;text-align:left;display:flex;flex-direction:column}
+.pic{position:relative;display:block;width:100%;aspect-ratio:1/1;background:var(--paper);overflow:hidden}
+.tile.wide .pic{aspect-ratio:16/9}
+.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.pic.logo img{object-fit:contain;padding:14%}
+.pic.dark{background:var(--ink)}
+.pic.light{background:var(--white)}
+.badge{position:absolute;left:0;bottom:0;padding:4px 8px;background:var(--ink);color:var(--white);font-size:12px;line-height:1.2}
+.badge.mute{background:var(--mute)}
+.cover{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:10px 12px;background:var(--sand)}
+.cover img{width:46px;height:46px;object-fit:contain}
+.cover b{font-family:ArticaPro,sans-serif;font-weight:500;font-size:19px;line-height:1.1;color:var(--red);padding-bottom:30px;overflow-wrap:anywhere}
+.spec{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:14px;background:var(--white);overflow:hidden}
+.spec .aa{font-size:52px;line-height:1}
+.spec .ln{font-size:15px;line-height:1.2}
+.cap{display:flex;flex-direction:column;gap:3px;padding:8px 10px 10px}
+.cap .t{font-size:14px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.cap .s{font-size:12px;line-height:1.3;color:var(--mute)}
+.cap .u{font-size:12px;line-height:1.35;color:var(--ink2)}
+.cap .u b{font-weight:500;color:var(--blue)}
+.sel{position:absolute;top:0;right:0;width:44px;height:44px;border:0;padding:0;background:transparent;display:flex;align-items:center;justify-content:center}
+.sel span{width:24px;height:24px;border:1.5px solid var(--ink);background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center}
+.sel[aria-pressed=true] span{border-color:var(--red);background:var(--red)}
+.cta{position:relative;overflow:hidden;padding:18px 120px 18px 16px;background:var(--ink);color:var(--white);display:flex;flex-direction:column;gap:8px}
+.cta img{position:absolute;right:-24px;top:-10px;width:150px;opacity:.9;-webkit-mask-image:linear-gradient(to left,#000 50%,transparent);mask-image:linear-gradient(to left,#000 50%,transparent)}
+.cta b{position:relative;font-family:ArticaPro,sans-serif;font-weight:500;font-size:20px;line-height:1.1}
+.cta span{position:relative;font-size:13px;line-height:1.45;color:var(--sand)}
+.note{margin-top:14px;padding:16px;background:var(--white);display:flex;flex-direction:column;gap:10px}
+.note .tt{font-family:ArticaPro,sans-serif;font-weight:500;font-size:20px;line-height:1.15}
+.note p{margin:0;font-size:14px;line-height:1.45;color:var(--ink2)}
+.empty{margin-top:14px;padding:24px 18px;background:var(--cream) url(img/coral.jpg) center/220px auto}
+.outline{height:40px;padding:0 12px;border:1px solid var(--red);background:var(--white);color:var(--red);font-size:14px}
+.more{display:block;width:100%;height:46px;margin-top:14px;border:1px solid var(--ink);background:var(--white);font-size:14px}
+.selbar{flex:none;display:flex;align-items:center;gap:10px;padding:10px 12px 10px 16px;background:var(--white);border-top:2px solid var(--red)}
+.selbar div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.selbar b{font-size:14px;font-weight:500}
+.link{align-self:flex-start;height:24px;padding:0;border:0;background:transparent;color:var(--ink2);font-size:13px;text-decoration:underline}
+.primary{flex:none;min-height:48px;padding:0 16px;border:0;background:var(--red);color:var(--white);font-size:15px;font-weight:500}
+.primary[disabled]{opacity:.6}
+nav.tabs{flex:none;display:flex;background:var(--white);border-top:1px solid var(--line);padding-bottom:var(--safe-b)}
+nav.tabs button{flex:1;height:60px;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ink2);font-size:12px;position:relative}
+nav.tabs button[aria-current=page]{color:var(--red);font-weight:500}
+nav.tabs .dot{position:absolute;top:8px;left:calc(50% + 8px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:var(--white);font-size:11px;line-height:18px;font-weight:500}
+.ov{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;background:var(--cream)}
+.ovh{flex:none;display:flex;align-items:center;gap:8px;height:56px;padding:0 12px 0 4px;background:var(--white);border-bottom:1px solid var(--line);margin-top:var(--safe-t)}
+.back{display:flex;align-items:center;gap:6px;height:44px;padding:0 10px;border:0;background:transparent;font-size:15px}
+.ovh .kicker{margin-left:auto;font-size:11px;letter-spacing:.24em}
+.ovb{flex:1;min-height:0;overflow-y:auto}
+.hero{position:relative;width:100%;aspect-ratio:1/1;background:var(--white);overflow:hidden}
+.hero img{width:100%;height:100%;object-fit:contain;display:block}
+.hero.cov img{object-fit:cover}
+.hero.logo img{padding:12%}
+.hero.dark{background:var(--ink)}
+.nav2{position:absolute;top:50%;margin-top:-24px;width:44px;height:48px;border:0;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center}
+.pos{position:absolute;right:0;top:0;padding:5px 10px;background:rgba(58,34,25,.85);color:var(--white);font-size:13px}
+.strip{display:flex;gap:8px;overflow-x:auto;padding:10px 16px 0;scrollbar-width:none}
+.strip button{flex:none;position:relative;width:64px;height:64px;padding:0;border:2px solid transparent;background:var(--white)}
+.strip button[aria-pressed=true]{border-color:var(--red)}
+.strip img{width:100%;height:100%;object-fit:cover;display:block}
+.strip i{position:absolute;left:0;bottom:0;min-width:18px;padding:1px 4px;background:var(--ink);color:var(--white);font-size:11px;font-style:normal;line-height:1.3}
+.info{padding:16px;display:flex;flex-direction:column;gap:14px}
+.info h1{margin:0;font-family:ArticaPro,sans-serif;font-weight:500;font-size:26px;line-height:1.1;overflow-wrap:anywhere}
+.meta{font-size:14px;line-height:1.4;color:var(--ink2)}
+.q{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}
+.q span:last-child{padding:3px 8px;border:1px solid var(--blue);color:var(--blue);font-size:12px;line-height:1.3}
+.q.low span:last-child{border-color:var(--red);color:var(--red)}
+.fit{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);background:var(--white)}
+.fit b{font-weight:500;font-size:15px}
+.fr{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:start}
+.fl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding-top:5px}
+.fts{display:flex;flex-wrap:wrap;gap:6px}
+.ft{padding:3px 8px;border:1px solid var(--blue);color:var(--blue);font-size:12px;line-height:1.3}
+button.ft{min-height:40px;padding:8px 14px;font:inherit;font-size:14px;line-height:1.3;background:var(--white);cursor:pointer;-webkit-tap-highlight-color:transparent}
+button.ft.ok{background:var(--blue);color:var(--white)}
+button.ft:active{opacity:.6}
+button.ft.cur{outline:3px solid var(--red);outline-offset:2px}
+button.ft:disabled{opacity:.45}
+.fts span.ft{min-height:40px;padding:8px 14px;font-size:14px;display:inline-flex;align-items:center}
+.fh{font-size:13px;line-height:1.4;color:var(--ink2)}
+.ft.ok{background:var(--blue);color:var(--white)}
+.ft.no{border-color:var(--line2);color:var(--mute)}
+.fr{display:flex;flex-direction:column;gap:6px}
+.fl{padding-top:4px}
+button.ft i{font-style:normal;font-size:11px;opacity:.65;margin-left:6px}
+.fh b{display:block;font-size:15px;font-weight:500;color:var(--ink);margin-bottom:2px}
+.lg{display:flex;gap:14px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--ink2)}
+.lg>span{display:flex;align-items:center;gap:6px}
+.lg .ft{width:14px;height:14px;padding:0}
+.fit small{font-size:12px;line-height:1.4;color:var(--mute)}
+.fmtl{flex:none;align-self:center;font-size:12px;color:var(--mute);padding-right:2px}
+.form{display:flex;flex-direction:column;gap:14px;padding:18px 16px 24px}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld>span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.fld input,.fld select{height:46px;padding:0 12px;border:1px solid var(--ink);background:var(--white);font:inherit;font-size:15px;color:var(--ink);border-radius:0;-webkit-appearance:none;appearance:none}
+.danger{height:46px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:14px}
+.pp{display:flex;align-items:center;gap:12px;width:100%;padding:14px 0;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left}
+.pp .nm{flex:1;display:flex;flex-direction:column;gap:3px;font-size:15px}
+.pp .nm small{font-size:12px;color:var(--mute);line-height:1.35}
+.pp .rl{flex:none;padding:3px 8px;border:1px solid var(--line2);color:var(--ink2);font-size:12px}
+.pp .rl.own{border-color:var(--red);color:var(--red)}
+.sw{display:flex;align-items:center;gap:12px;width:100%;padding:14px 0;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left}
+.sw .nm{flex:1;display:flex;flex-direction:column;gap:3px;font-size:15px}
+.sw .nm small{font-size:12px;color:var(--mute);line-height:1.35}
+.sw i{flex:none;position:relative;width:44px;height:24px;border:1px solid var(--ink);background:var(--white)}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--ink)}
+.sw[aria-pressed=true] i{background:var(--red);border-color:var(--red)}
+.sw[aria-pressed=true] i::after{left:23px;background:var(--white)}
+.warn{margin:-6px 0 0;font-size:13px;line-height:1.45;color:var(--red)}
+.acts{display:flex;flex-direction:column;gap:8px}
+.acts .primary{min-height:52px;padding:8px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.acts .primary small{font-size:12px;font-weight:400;color:#FBE3DD}
+.sec{height:46px;border:1px solid var(--ink);background:var(--white);font-size:14px}
+.sec.soft{border-color:var(--line2)}
+.how{display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--white);border-left:3px solid var(--blue);font-size:13px;line-height:1.45}
+.toast{position:absolute;left:12px;right:12px;bottom:calc(72px + var(--safe-b));z-index:30;padding:14px 14px 12px 16px;background:var(--ink);color:var(--white);display:flex;flex-direction:column;gap:10px;box-shadow:0 0 0 1px var(--sand)}
+.toast span{font-size:14px;line-height:1.45}
+.toast div{display:flex;justify-content:flex-end;gap:10px}
+.toast button{height:36px;padding:0 14px;border:1px solid var(--white);background:transparent;color:var(--white);font-size:13px}
+.toast button.go{background:var(--white);color:var(--ink)}
+/* меню */
+.mh{flex:none;position:relative;display:flex;flex-direction:column;gap:12px;padding:18px 16px 12px;overflow:hidden;padding-top:calc(18px + var(--safe-t))}
+.prog{display:flex;flex-direction:column;gap:6px}
+.prog .r{display:flex;justify-content:space-between;align-items:baseline;font-size:15px}
+.prog .r b{font-family:ArticaPro,sans-serif;font-size:22px;font-weight:500;color:var(--red)}
+.bar{height:6px;background:var(--line)}.bar i{display:block;height:6px;background:var(--red)}
+.chk{display:flex;align-items:center;gap:10px;min-height:40px;font-size:14px}
+.chk input{width:20px;height:20px;accent-color:var(--red);margin:0}
+.ms{display:flex;flex-direction:column;padding-top:16px}
+.ms .gh{padding:0 0 8px;border-bottom:1px solid var(--line2)}
+.row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--paper)}
+.row .th{flex:none;position:relative;width:56px;height:56px;padding:0;border:0;background:var(--paper)}
+.row .th img{width:56px;height:56px;object-fit:cover;display:block}
+.row .th i{position:absolute;right:0;bottom:0;padding:1px 4px;background:var(--ink);color:var(--white);font-size:11px;font-style:normal;line-height:1.3}
+.row .no{flex:none;width:56px;height:56px;border:1.5px dashed var(--red);display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;line-height:1.15;color:var(--red)}
+.row .nm{flex:1;font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+.row .ok{flex:none;font-size:12px;color:var(--blue);white-space:nowrap}
+.row .up{flex:none;height:44px;padding:0 10px;border:1px solid var(--red);background:var(--white);color:var(--red);font-size:13px}
+.barbox{margin:14px 0 0;padding:12px;background:var(--white);border-left:3px solid var(--gold);font-size:14px;line-height:1.45}
+.bg2{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}
+.bg2 .kicker{font-size:11px;letter-spacing:.24em}
+.bg2 span:last-child{font-size:14px;line-height:1.55}
+.bh{margin:18px 0 4px;font-family:ArticaPro,sans-serif;font-weight:500;font-size:20px;line-height:1.15}
+/* проверка */
+.card{display:flex;flex-direction:column;background:var(--white)}
+.card .ph{width:100%;height:260px;background:var(--paper);overflow:hidden}
+.card .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.card .in{padding:14px;display:flex;flex-direction:column;gap:12px}
+.card .lb{font-family:ArticaPro,sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.card .ai{font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.card .qq{font-family:ArticaPro,sans-serif;font-weight:500;font-size:20px;line-height:1.15}
+.opt{min-height:48px;padding:10px 14px;border:1px solid var(--ink);background:var(--white);font-size:15px;line-height:1.3;text-align:left;display:flex;flex-direction:column;gap:2px}
+.opt small{font-size:12px;color:var(--ink2)}
+.two{display:flex;gap:8px}.two button{flex:1;height:44px;border:1px solid var(--line2);background:var(--white);color:var(--ink2);font-size:14px}
+.own{display:flex;gap:8px}.own input{flex:1;min-width:0;height:46px;border:1px solid var(--ink);padding:0 10px;font:inherit;font-size:16px;background:var(--white);color:var(--ink)}
+.ok2{margin:12px 0 0;font-size:13px;line-height:1.4;color:var(--blue)}
+.skel{background:linear-gradient(90deg,var(--paper),#F6ECDF,var(--paper));background-size:200% 100%;animation:sk 1.2s infinite linear}
+@keyframes sk{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+.center{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:24px}
+.center h1{margin:0;font-family:ArticaPro,sans-serif;font-weight:500;font-size:26px;line-height:1.1}
+.center p{margin:0;font-size:15px;line-height:1.5;color:var(--ink2)}
+.center img{width:120px;height:auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app" id="app" aria-live="polite"></div>
+<script>
+'use strict';
+const MENU = {"jp":[["Raw bar",["Рулетики из лосося с камчатским крабом и соусом понзу","Татаки из лосося","Карпаччо из мурманского гребешка с трюфельным понзу","Татаки из тунца с соусом вафу","Тартар из лосося с авокадо","Тартар из тунца"]],["Салаты и закуски",["Салат чука","Маринованные древесные грибы","Битые огурцы","Поке с тунцом","Поке с лососем","Поке с креветками","Бобы эдамаме с солью","Бобы эдамаме с кимчи"]],["Роллы",["Ролл с опаленным лососем, крабом и красной икрой","Ролл Филадельфия с лососем","Ролл Филадельфия с тунцом","Ролл Калифорния с крабом","Ролл Калифорния с креветками","Ролл Дракон с угрем","Ролл с гребешком, тунцом и трюфельным айоли","Нежный ролл с крабом, угрём, лососем и авокадо","Сашими ролл Рыба Моя","Ролл Канада с угрем","Кето-ролл с авокадо, крабом, лососем и тунцом","Кето-ролл тунец, лосось, креветка"]],["Маки роллы",["Маки ролл с тунцом","Маки ролл с лососем","Маки ролл с авокадо","Маки ролл с угрем","Маки ролл с огурцом","Маки ролл такуан","Маки ролл с гребешком"]],["Гунканы",["Гункан с тунцом","Гункан с гребешком","Гункан с крабом","Гункан с угрем","Гункан с лососем"]],["Сашими",["Сашими из тунца","Сашими из лосося","Сашими из гребешка","Сашими из угря"]],["Суши",["Суши с лососем","Суши с тунцом и соусом васаби","Суши с гребешком и трюфельным айоли","Суши с угрём и соусом унаги","Суши с креветкой"]],["Супы",["Суп том ям с креветками","Мисо суп","Доширак"]],["Горячее",["Лапша Яки удон с кальмаром","Булочка бао со свининой","Лосось терияки с пак-чой и рисом","Угорь унаги с яйцом и рисом","Димсамы с крабом","Димсамы с креветками"]],["Десерты",["Хлопковый чизкейк с матчей и кремом юдзу","Моти клубничный пломбир","Моти манго-маракуйя","Моти шоколад","Моти кокос"]]],"rm":[["Свежий улов и краб",["Сахалинский гребешок: тартар, крудо, карпаччо, гриль, севиче","Салат из камчатского краба с авокадо и свежим огурцом","Клешни и фаланги камчатского краба: в молоке, «Термидор», с топлёным маслом","Сибас: тартар, крудо, севиче, печь, соль, гриль, в соусе по-сицилийски, аква пацца","Красный снеппер: тартар, крудо, севиче, печь, соль, гриль, в соусе по-сицилийски, аква пацца","Пагр: тартар, крудо, севиче, печь, соль, гриль, в соусе по-сицилийски, аква пацца","Попугай: тартар, крудо, севиче, печь, соль, гриль, в соусе по-сицилийски, аква пацца","Тюрбо: тартар, крудо, севиче, печь, соль, гриль, в соусе по-сицилийски, аква пацца"]],["Устрицы и морской ёж",["«Добрые устрицы»","Устрица «Дибба бэй»","Устрица «Святой Патрик»","Устрица «Муроцу»","Морской ёж с перепелиным желтком, огурцом и трюфельным понзу","Морской ёж с крабом, красной икрой и гребешком"]],["Ледяная витрина",["Севиче из сибаса","Татаки из гребешка с соусом из манго и конкасе из томатов","Карпаччо из мурманского гребешка с трюфельным понзу","Тартар из лосося с гуакамоле"]],["Икра и плато",["Икра щучья","Икра лососёвая","Икра осетровая","Холодное плато"]],["Суши и роллы",["Суши с лососем и соусом лемонграсс","Суши с креветкой","Суши с угрём и соусом унаги","Суши с гребешком и трюфельным айоли","Кето-ролл с авокадо, крабом, лососем и тунцом","Нежный ролл с крабом, угрём, лососем и авокадо","Классический ролл «Калифорния» с крабом","Ролл с лососем и сливочным сыром","Ролл с гребешком, тунцом и трюфельным айоли","Ролл с опалённым лососем, крабом и красной икрой","Осидзуси с угрём, фуа-гра и чёрным трюфелем"]],["Закуски",["Форшмак","Гребешки, креветки и чёрные лисички на каше из сельдерея","Рулетики из лосося с камчатским крабом и соусом понзу","Бриошь с крабом, пармезаном и чёрным трюфелем","Магаданские креветки на льду","Гребешки с чили в топлёном масле с чесноком"]],["Салаты",["Зелёный салат с авокадо","Греческий салат","Салат с тигровыми креветками, манго, авокадо и имбирным айоли","Салат Нисуаз с тунцом","Тёплый салат с кальмаром, брюссельской капустой и яблоками","Камчатский краб с авокадо и томатами"]],["Супы",["Томатный суп «Рыба Моя» с тигровыми креветками, командорскими кальмарами, карельским судаком и мидиями","Том ям с морепродуктами и тайским рисом","Уха с карельским судаком"]],["Горячее",["Плато из рыбы и морепродуктов на гриле","Фаланги камчатского краба","Димсамы с креветками","Димсамы с крабом","Щучьи котлеты с картофельным пюре и соусом из шпината","Муксун с запечённым в углях картофелем и сливочным соусом","Лосось с икорным соусом, брюссельской капустой и картофелем","Филе сибаса с авокадо, томатами и соусом мисо","Щупальца осьминога с печёным перцем, картофелем и соусом из пряных трав"]],["Паста и ризотто",["Паста с камчатским крабом","Лингвини с татаки из лосося","Ризотто с белыми грибами и гребешками","Ризотто с морепродуктами и соусом песто"]],["Гарниры",["Брюссельская капуста со сливочной эспумой","Овощи на гриле","Брокколи на гриле с ореховым соусом","Картофельное пюре","Обжаренный молодой картофель","Рис с соусом понзу"]],["Десерты",["Наполеон с малиной","«Золотая рыбка» с арахисовым муссом и солёной карамелью","Крем-брюле с малиной","Тыквенный пирог с сорбетом из облепихи","Меренговый рулет с манго и маракуйей","«Жемчужина»","Мороженое","Сорбет"]]],"alias":{"Салат чука":"чука с ореховым соусом","Карпаччо из мурманского гребешка с трюфельным понзу":"с соусом понзу","Кето-ролл тунец, лосось, креветка":"кето-ролл с креветкой, тунцом и лососем","Нежный ролл с крабом, угрём, лососем и авокадо":"«Нежный» с крабом, угрём и лососем","Лапша Яки удон с кальмаром":"с кальмарами","Ролл Филадельфия с лососем":"«Филадельфия»","Ролл Калифорния с крабом":"«Калифорния»","Димсамы с крабом":"димсамы краб","Димсамы с креветками":"димсамы креветка","Мисо суп":"мисо"},"bar":[{"rest":"Рыба Моя","groups":[["Коктейли",["Мартини Фиеро Тоник","Мартини Фиеро Спритц","Драй Дайкири","Мушмула","Смарт Кэжуал","Априкот Слинг","Детокс Физз","Нью Сенчери","«Плиз, Донт Телл»","Флэш Рояль","Астер","Тонка Александр","Квинтет","Экселенс","Фиш Хаус Панч #3"]],["Лимонады — бокал и кувшин",["«Сладкий»","«Кислый»","«Свежий»"]],["Соки",["свежевыжатые соки"]],["Кофе и какао",["эспрессо","американо","капучино","флэт уайт","латте","раф","матча латте","какао"]],["Чай",["фруктовые чаи"]],["Вино",["винная карта"]]]},{"rest":"Рыба Моя в Японии","groups":[["Чай",["сенча","цветок жасмина","ассам","эрл грей","масала чай","перечная мята","ройбуш с апельсином","зверобой-мелисса-лист смородины","вербена-имбирь-чабрец","шалфей-лаванда-ромашка"]],["Вода",["Тассай","Лауретана"]],["Соки и лимонады",["сок Цуегг","кола","тоник Дж. Гаско","лимонад РЕКА","лимонад San Pellegrino"]],["Сидр и пиво",["сидр Бэксвуд","пиво Альгамбра Резерва 1925","Цинтао Стаут","Клаустайлер б/а"]],["Соджу",["Джинро (виноград, персик, лимон)"]],["Крепкое",["коньяк Камю ВС","джин Марэ","водка Onegin","виски Гленфиддик 12 лет"]],["Вино",["винная карта"]]]}]};
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+const P = new URLSearchParams(location.search);
+const SB = (P.get('sb') || '').replace(/\/+$/, ''), KEY = P.get('k') || '';
+const INIT = tg ? tg.initData || '' : '';
+const $app = document.getElementById('app');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pl = (n, a, b, c) => { const m = n % 10, h = n % 100; return n + ' ' + (m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 12 || h > 14) ? b : c); };
+const norm = t => String(t || '').toLowerCase().replace(/ё/g, 'е').replace(/[«»"'().,;:!?—–\-\/]+/g, ' ').replace(/\s+/g, ' ').trim();
+const dishNorm = t => String(t || '').toLowerCase().replace(/ё/g, 'е').replace(/[^а-яa-z0-9]+/g, ' ').trim();
+const JP = 'Рыба Моя в Японии';
+const ICO = {
+  help: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><path d="M12 17h.01"/></svg>',
+  grid: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
+  menu: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>',
+  check: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>',
+  tick: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
+  back: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+  next: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+  people: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 5.2a3.5 3.5 0 010 5.6M18.5 14.6c1.9.9 3 2.7 3 5.4"/></svg>',
+  lens: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3A2219" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>'
+};
+const SECS = [['all', 'Всё'], ['dish', 'Блюда'], ['drink', 'Напитки'], ['interior', 'Интерьер'], ['layout', 'Макеты'], ['print', 'Полиграфия'], ['pack', 'Упаковка'], ['logo', 'Логотипы'], ['art', 'Иллюстрации'], ['detail', 'Детали'], ['menu', 'Меню'], ['deck', 'Презентации'], ['brand', 'Брендбук'], ['docs', 'Документы'], ['font', 'Шрифты'], ['people', 'Люди и события'], ['other', 'Другое']];
+const SECN = Object.fromEntries(SECS);
+const SEC_OF = { 'блюдо': 'dish', 'напиток': 'drink', 'макет': 'layout', 'баннер': 'layout', 'презентация': 'deck', 'полиграфия': 'print', 'упаковка': 'pack', 'иллюстрация': 'art', 'детали': 'detail', 'документ': 'docs', 'интерьер': 'interior', 'фасад': 'interior', 'логотип': 'logo', 'меню': 'menu', 'брендбук': 'brand', 'шрифт': 'font', 'шаблон': 'deck',
+  'шеф': 'people', 'команда': 'people', 'гости': 'people', 'событие': 'people' };
+const RESTS = [['all', 'Все рестораны'], ['rm', 'Рыба Моя'], ['jp', 'в Японии']];
+const BOTH = 'Рыба Моя и Рыба Моя в Японии';
+const restCode = r => !r || r === BOTH ? 'all' : r === JP ? 'jp' : /^Рыба Моя/.test(r) ? 'rm' : 'other';
+const SHORT = r => !r ? '' : r === JP ? 'в Японии' : r;
+const SIGN = { jp: 'img/sign-jp.webp', rm: 'img/sign-rm.webp' };
+const SYN = [[/лосос|семг|форел/, 'красная рыба'], [/тунц|тунец/, 'красная рыба тунец'], [/угор|угр|унаги/, 'угорь унаги'], [/гребеш/, 'морепродукты'], [/краб|кревет|кальмар|осьминог|мид/, 'морепродукты'],
+  [/моти|чизкейк|наполеон|брюле|сорбет|морожен|рулет/, 'десерт сладкое'], [/логотип/, 'лого знак logo'], [/гункан/, 'гунканы суши'], [/ролл|маки/, 'роллы суши'], [/зал|интерьер/, 'зал интерьер атмосфера']];
+const STOP = new Set(['и', 'с', 'со', 'в', 'во', 'на', 'из', 'по', 'для', 'фото', 'фотки', 'мне', 'нужно', 'нужны', 'нужен', 'найди', 'покажи', 'все', 'дай']);
+const stem = w => w.length >= 6 ? w.slice(0, -2) : w.length >= 4 ? w.slice(0, 4) : w;
+// меню: блюдо → раздел меню своего ресторана
+const MENU_IDX = { jp: new Map(), rm: new Map() };
+for (const t of ['jp', 'rm']) MENU[t].forEach(([g, list], gi) => list.forEach((d, di) => MENU_IDX[t].set(dishNorm(d), { g, gi, di, name: d })));
+for (const [name, alias] of Object.entries(MENU.alias || {})) { const x = MENU_IDX.jp.get(dishNorm(name)); if (x) MENU_IDX.jp.set(dishNorm(alias), x); }
+
+const can = k => false;
+const PERMS = [['upload', 'Загружать файлы', 'Присылать боту новые фото и документы'], ['edit', 'Править подписи', 'Название, раздел, ресторан и теги'], ['del', 'Убирать в корзину', 'Файл пропадает из поиска, вернуть можно'], ['people', 'Приглашать людей', 'Давать доступ и менять эти права']];
+const S = { stage: 'load', edit: null, people: null, person: null, err: '', me: null, items: [], pos: [], byKey: {}, tab: 'cat', sec: 'all', rest: 'all', fmt: '', q: '', sel: new Set(), open: null, ph: 0, toast: null, limit: 60,
+  mtab: 'jp', only: false, rv: null, rvSkip: 0, rvFixed: 0, rvLast: '', rvOwn: false, rvBusy: false, sending: false };
+
+async function rpc(fn, args) {
+  const h = { apikey: KEY, 'content-type': 'application/json' };
+  if (/^eyJ/.test(KEY)) h.authorization = 'Bearer ' + KEY;
+  let r;
+  try { r = await fetch(SB + '/rest/v1/rpc/' + fn, { method: 'POST', headers: h, body: JSON.stringify(args) }); }
+  catch (e) { throw new Error('net'); }
+  const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch (e) {}
+  if (!r.ok) throw new Error(r.status === 404 ? 'old_sql' : r.status === 401 || r.status === 403 ? 'key' : 'http_' + r.status);
+  return j;
+}
+const imgUrl = (it, big) => it.ver ? SB + '/storage/v1/object/public/media-img/' + it.id + (big && it.m ? '-m.jpg' : '-s.jpg') + '?v=' + it.ver : '';
+const ext = it => { const m = /\.([a-z0-9]{2,5})$/i.exec(it.fn || ''); if (m) return m[1].toUpperCase(); if (it.kind === 'photo') return 'JPG'; const mm = /\/([a-z0-9+.-]+)$/i.exec(it.mime || ''); return mm ? mm[1].replace('svg+xml', 'svg').toUpperCase() : ''; };
+const fontCss = t => { const n = norm(t); return /artica/.test(n) ? 'ArticaPro, sans-serif' : /futura/.test(n) ? '"Futura New", sans-serif' : 'inherit'; };
+const fontW = t => /medium|semi|bold|полужир|жирн/i.test(t || '') ? 500 : 400;
+
+function build(raw) {
+  const items = raw.map(a => ({ id: a[0], kind: a[1], section: a[2], restaurant: a[14] ? BOTH : a[3], both: !!a[14], title: a[4] || a[5] || 'Без названия', fn: a[5], mime: a[6], w: a[7], h: a[8], size: a[9], tags: a[10], ver: Number(a[11]) || 0, m: !!a[12], bgc: a[13] }));
+  const map = new Map();
+  for (const it of items) {
+    let sec = SEC_OF[it.section] || 'other'; const rc = restCode(it.restaurant);
+    const vec = sec === 'logo' && /svg|pdf|postscript|illustrator/i.test(it.mime || ''); // одна вкладка «Логотипы», внутри две группы
+    const key = sec + '|' + (it.restaurant || '') + '|' + norm(it.title);
+    let p = map.get(key);
+    if (!p) {
+      let group = '', order = [99, 0, it.title];
+      if (sec === 'dish') {
+        if (it.section === 'напиток') { group = 'Напитки'; order = [90, 0, it.title]; }
+        else {
+          const tryOn = t => MENU_IDX[t].get(dishNorm(it.title));
+          const hit = rc === 'jp' ? tryOn('jp') : rc === 'rm' ? tryOn('rm') : (tryOn('jp') || tryOn('rm'));
+          if (hit) { group = hit.g; order = [hit.gi, hit.di, '']; } else { group = 'Не из меню — названия проверит куратор'; order = [95, 0, it.title]; }
+        }
+      } else if (sec === 'interior') { const noAddr = !it.restaurant || it.restaurant === 'Рыба Моя'; group = noAddr ? 'Адрес не указан — куратор отметит через /halls' : it.restaurant; order = [it.restaurant === JP ? 0 : noAddr ? 9 : 1, 0, it.title]; }
+      else if (sec === 'logo') { group = vec ? 'Вектор — SVG, PDF' : 'PNG и JPG'; order = [vec ? 10 : 20, 0, it.title]; }
+      else if (sec === 'art') group = 'Иллюстрации и графика';
+      else if (sec === 'detail') group = 'Посуда и детали';
+      else if (sec === 'docs') group = 'Документы и гайдлайны';
+      else if (sec === 'layout') group = 'Макеты и афиши';
+      else if (sec === 'print') group = 'Полиграфия';
+      else if (sec === 'pack') group = 'Упаковка';
+      else if (sec === 'drink') group = 'Напитки';
+      else if (sec === 'menu') group = 'Меню, барные и винные карты';
+      else if (sec === 'brand') group = 'Брендбук и фирменный стиль';
+      else if (sec === 'font') { group = it.restaurant ? 'Шрифты — ' + it.restaurant : 'Шрифты общие'; order = [it.restaurant === JP ? 2 : it.restaurant ? 1 : 3, 0, it.title]; }
+      else if (sec === 'deck') group = 'Шаблоны и презентации';
+      else group = it.section ? it.section[0].toUpperCase() + it.section.slice(1) : 'Разное';
+      p = { key, sec, rc, restaurant: it.restaurant, title: it.title, group, order, files: [] };
+      map.set(key, p);
+    }
+    p.files.push(it);
+  }
+  const pos = [...map.values()];
+  for (const p of pos) {
+    p.files.sort((a, b) => (b.kind === 'document') - (a.kind === 'document') || (b.ver > 0) - (a.ver > 0));
+    p.low = p.files.filter(f => f.kind === 'photo').length;
+    p.kindT = /^logo/.test(p.sec) ? 'logo' : p.sec === 'font' ? 'font' : (p.sec === 'menu' || p.sec === 'brand' || p.sec === 'deck') && p.files.some(f => /pdf|pptx?|key|docx?/i.test(ext(f))) ? 'doc' : 'photo';
+    const syn = SYN.filter(([re]) => re.test(norm(p.title))).map(([, s]) => s).join(' ');
+    p.hayT = norm(p.title).split(' ');
+    p.hay = norm([p.title, SECN[p.sec], p.restaurant, p.files.map(f => f.tags + ' ' + f.fn).join(' '), syn].join(' ')).split(' ');
+    p.hayG = p.hay.concat(norm(p.group).split(' '));
+  }
+  pos.sort((a, b) => SECS.findIndex(x => x[0] === a.sec) - SECS.findIndex(x => x[0] === b.sec) || a.order[0] - b.order[0] || a.order[1] - b.order[1] || String(a.order[2]).localeCompare(String(b.order[2]), 'ru'));
+  S.items = items; S.pos = pos; S.byKey = Object.fromEntries(pos.map(p => [p.key, p]));
+  S.byDish = { jp: new Map(), rm: new Map() };
+  for (const p of pos) if (p.sec === 'dish') {
+    for (const t of ['jp', 'rm']) { if ((t === 'jp' && p.rc === 'rm') || (t === 'rm' && p.rc === 'jp')) continue; const hit = MENU_IDX[t].get(dishNorm(p.title)); if (hit) { const k = dishNorm(hit.name); const a = S.byDish[t].get(k) || []; a.push(p); S.byDish[t].set(k, a); } }
+  }
+}
+
+// ---------- отрисовка ----------
+function render() {
+  if (S.stage !== 'ok') return renderState();
+  const html = S.tab === 'menu' ? renderMenu() : S.tab === 'help' ? renderHelp() : S.tab === 'review' ? renderReview() : S.tab === 'people' ? renderPeople() : renderCatalog();
+  const isCur = S.me && ['owner', 'admin', 'curator'].includes(S.me.role);
+  const tabs = [['cat', 'Каталог', ICO.grid], ['menu', 'Меню', ICO.menu], ['help', 'Помощь', ICO.help], ...(isCur ? [['review', 'Проверка', ICO.check]] : []), ...(can('people') ? [['people', 'Люди', ICO.people]] : [])];
+  const scroll = document.querySelector('.body'); const top = scroll && S._keepScroll ? scroll.scrollTop : 0;
+  $app.innerHTML = html + '<nav class="tabs" aria-label="Разделы">' + tabs.map(([id, l, ic]) => `<button data-act="tab" data-v="${id}"${S.tab === id ? ' aria-current="page"' : ''}>${ic}${l}${id === 'review' && S.me.review ? `<span class="dot">${S.me.review > 99 ? '99+' : S.me.review}</span>` : ''}</button>`).join('') + '</nav>' + renderOpen() + renderEdit() + renderPerson() + renderToast() + renderTour();
+  if (S._keepScroll) { const b = document.querySelector('.body'); if (b) b.scrollTop = top; S._keepScroll = false; }
+  if (tg && tg.BackButton) { if (S.open) tg.BackButton.show(); else tg.BackButton.hide(); }
+  if (S._focusQ) { const i = document.getElementById('q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } S._focusQ = false; }
+}
+function renderState() {
+  const box = (title, text, extra) => `<div class="center"><img src="img/sign-jp.webp" alt=""><h1>${esc(title)}</h1><p>${text}</p>${extra || ''}</div>`;
+  if (S.stage === 'load') { $app.innerHTML = `<header class="hd"><img class="koi" src="img/koi.webp" alt="" aria-hidden="true"><div class="brand"><img src="img/wordmark.png" alt="Рыба Моя"><span class="kicker">Медиатека</span></div></header><div class="band"></div><div class="body"><div class="grid">${'<div class="tile"><span class="pic skel"></span><span class="cap"><span class="t skel" style="height:14px"></span></span></div>'.repeat(6)}</div><span class="sr">Загружаю каталог…</span></div>`; return; }
+  const E = {
+    notg: ['Откройте каталог из бота', 'Каталог работает внутри Telegram: откройте бота медиатеки и нажмите кнопку «Каталог» слева от поля ввода.'],
+    cfg: ['Каталог не настроен', 'В ссылке нет адреса базы. Откройте каталог кнопкой «Каталог» в чате с ботом — она сама подставит всё нужное.'],
+    auth: ['Не получилось проверить вход', 'Telegram не подтвердил, кто открыл каталог. Закройте его и откройте снова кнопкой «Каталог» в чате с ботом.'],
+    no_access: ['Нет доступа', 'Медиатека открыта только по приглашению. Попросите куратора прислать ссылку-приглашение, нажмите её — и каталог откроется.'],
+    old_sql: ['Каталогу нужно обновление базы', 'Куратору: выполните свежий media-supabase.sql в Supabase → SQL Editor.'],
+    key: ['Неверный ключ базы', 'Куратору: проверьте SUPABASE_ANON в «Настройках» n8n — нужен публичный ключ (Publishable).'],
+    net: ['Нет связи', 'Не получилось загрузить каталог. Проверьте интернет и попробуйте ещё раз.']
+  }[S.err] || ['Что-то пошло не так', 'Не получилось загрузить каталог. Попробуйте ещё раз через минуту.'];
+  $app.innerHTML = box(E[0], esc(E[1]), S.err === 'net' || /^http_/.test(S.err) ? '<button class="primary" data-act="retry">Попробовать ещё раз</button>' : '');
+}
+const header = (kicker, inner) => `<header class="hd"><img class="koi" src="img/koi.webp" alt="" aria-hidden="true"><div class="brand"><img src="img/wordmark.png" alt="Рыба Моя"><span class="kicker">${kicker}</span></div>${inner}</header><div class="band" aria-hidden="true"></div>`;
+// размер оригинала и «куда подойдёт»: те же правила, что у бота (/formats)
+// форматы названы по задаче («куда нужно фото»), а не по пропорции: [id, название, ширина, высота, еда, куда, поворот, пропорция мелко]
+const FORMATS = [['story', 'Сторис', 1080, 1920, 0, 'Инстаграм, VK, Telegram', 0, '9:16'], ['p45', 'Пост в ленту', 1080, 1350, 0, 'Инстаграм, VK, Telegram', 0, '4:5'], ['p34', 'Пост в сетку профиля', 1080, 1440, 0, 'Инстаграм, VK, Telegram', 0, '3:4'], ['sq', 'Квадратный пост', 1080, 1080, 0, 'Инстаграм, VK, Telegram', 0, '1:1'],
+  ['ymap', 'Сторис в Картах', 1080, 1920, 0, 'Яндекс Карты', 0, '9:16'], ['eda', 'Фото блюда', 800, 600, 1, 'Яндекс Еда', 0, '4:3'], ['eda1', 'Главное фото ресторана', 1600, 1200, 1, 'Яндекс Еда', 0, '4:3'],
+  ['web', 'Баннер', 1920, 1080, 0, 'Сайт', 0, '16:9'], ['a3', 'Афиша A3', 3508, 4961, 0, 'Печать', 1, ''], ['a4', 'Лист A4', 2480, 3508, 0, 'Печать', 1, ''], ['a5', 'Листовка A5', 1748, 2480, 0, 'Печать', 1, '']];
+const FSHORT = { story: 'Сторис', p45: 'Пост в ленту', p34: 'Пост в сетку', sq: 'Квадратный пост', ymap: 'Яндекс Карты', eda: 'Яндекс Еда — блюдо', eda1: 'Яндекс Еда — главное', web: 'Баннер на сайт', a3: 'Печать A3', a4: 'Печать A4', a5: 'Печать A5' };
+const fmtName = F => FSHORT[F[0]] || F[1];
+const isPic = f => f.kind === 'photo' || /^image\/(jpeg|png|webp|gif)/.test(f.mime || '');
+function fitOne(w, h, fw, fh, eda) {
+  if (eda && w > h && w >= fw && h >= fh) return 'ok';
+  const r = fw / fh, wide = w / h > r, cw = wide ? h * r : w, ch = wide ? h : w / r;
+  if (cw < fw * 0.98 || ch < fh * 0.98) return 'no';
+  const keep = cw * ch / (w * h);
+  return keep >= 0.8 ? 'ok' : keep >= 0.5 ? 'crop' : 'no';
+}
+function fitOf(w, h, F) {
+  if (!w || !h) return '';
+  const a = fitOne(w, h, F[2], F[3], F[4]), b = F[6] ? fitOne(w, h, F[3], F[2], 0) : 'no', rank = { ok: 2, crop: 1, no: 0 };
+  return rank[b] > rank[a] ? b : a;
+}
+const pixOk = (w, h, F) => { const one = (fw, fh) => { const r = fw / fh, wide = w / h > r; return (wide ? h * r : w) >= fw * 0.98 && (wide ? h : w / r) >= fh * 0.98; }; return one(F[2], F[3]) || (!!F[6] && one(F[3], F[2])); };
+function useOf(w, h) { // для чего этот размер — по пропорции кадра
+  if (!w || !h) return '';
+  const r = w / h, near = t => Math.abs(r - t) / t < 0.035;
+  if (near(9 / 16)) return 'Для сторис';
+  if (near(4 / 5)) return 'Для поста в ленту';
+  if (near(3 / 4)) return 'Для поста в сетку';
+  if (near(1)) return 'Квадратный пост';
+  if (near(16 / 9)) return 'Баннер на сайт';
+  if (near(1 / 1.4142) || near(1.4142)) return 'Для печати';
+  if (near(3 / 2)) return 'Горизонтальное фото';
+  if (near(4 / 3)) return w >= 800 && h >= 600 ? 'Для Яндекс Еды' : 'Горизонтальное фото';
+  if (near(2 / 3)) return 'Вертикальное фото';
+  return r > 1.15 ? 'Горизонтальное фото' : r < 0.87 ? 'Вертикальное фото' : 'Почти квадрат';
+}
+function useLine(p) { // строка под плиткой: для чего и какой размер; у позиции с разными кадрами — все варианты
+  const fs = p.files.filter(f => isPic(f) && f.w && f.h); if (!fs.length) return '';
+  const uses = [...new Set(fs.map(f => useOf(f.w, f.h)))], sizes = [...new Set(fs.map(f => f.w + '×' + f.h))];
+  const u = uses.slice(0, 3).join(', ') + (uses.length > 3 ? ' и ещё ' + (uses.length - 3) : '');
+  return `<span class="u"><b>${esc(u)}</b>${sizes.length === 1 ? ' · ' + sizes[0] : uses.length === 1 ? ' · разные размеры' : ''}</span>`;
+}
+function bestFor(p, id) { // номер файла позиции, который лучше всего подходит под выбранное «Куда нужно»: ближе всех по пропорции и хватает размера
+  const F = id && FORMATS.find(x => x[0] === id); if (!F) return -1;
+  let best = -1, bs = 1e9;
+  p.files.forEach((f, i) => {
+    if (!isPic(f) || !f.w || !f.h) return;
+    const st = fitOf(f.w, f.h, F); if (st !== 'ok' && st !== 'crop') return;
+    const r = f.w / f.h, d = Math.min(Math.abs(Math.log(r / (F[2] / F[3]))), F[6] ? Math.abs(Math.log(r / (F[3] / F[2]))) : 9) + (f.ver ? 0 : 0.01);
+    if (d < bs - 1e-9) { bs = d; best = i; }
+  });
+  return best;
+}
+const fitsFmt = (f, id) => { const F = FORMATS.find(x => x[0] === id); const st = F && isPic(f) ? fitOf(f.w, f.h, F) : ''; return st === 'ok' || st === 'crop'; };
+function fitHtml(f) {
+  if (!isPic(f)) return '';
+  if (!f.w || !f.h) return '<div class="fit"><small>Размер оригинала ещё измеряется — появится здесь в течение часа.</small></div>';
+  const mp = f.w * f.h / 1e6, mpT = mp >= 10 ? Math.round(mp) + ' Мп' : mp >= 1 ? String(Math.round(mp * 10) / 10).replace('.', ',') + ' Мп' : '';
+  const mbT = !f.size ? '' : f.size >= 1048576 ? String(Math.round(f.size / 104857.6) / 10).replace('.', ',') + ' МБ' : Math.max(1, Math.round(f.size / 1024)) + ' КБ';
+  const jpg = f.kind === 'photo' || /jpe?g/i.test(f.mime || '');
+  const groups = [...new Set(FORMATS.map(F => F[5]))];
+  const rows = groups.map(g => `<div class="fr"><span class="fl">${g}</span><span class="fts">${FORMATS.filter(F => F[5] === g).map(F => { let st = fitOf(f.w, f.h, F); if (st === 'no' && pixOk(f.w, f.h, F)) st = 'crop'; return st === 'no' ? `<span class="ft no">${esc(F[1])}</span>` : `<button class="ft${st === 'ok' ? ' ok' : ''}${S.fmt === F[0] ? ' cur' : ''}" data-act="sendfmt" data-v="${F[0]}"${S.sending ? ' disabled' : ''} aria-label="Прислать: ${esc(F[5] + ', ' + F[1])}">${esc(F[1])}${F[7] ? `<i>${F[7]}</i>` : ''}</button>`; }).join('')}</span></div>`).join('');
+  const edaOk = FORMATS.some(F => F[4] && fitOf(f.w, f.h, F) !== 'no'), fix = edaOk ? [!jpg ? 'пересохранить в JPG' : '', f.size > 15e6 ? 'сжать до 15 МБ' : ''].filter(Boolean).join(' и ') : '';
+  return `<div class="fit"><b>${f.w}×${f.h} px${mpT ? ' · ' + mpT : ''}${mbT ? ' · ' + mbT : ''}</b><span class="fh"><b>Куда нужно фото?</b> Нажмите — бот пришлёт этот кадр уже обрезанным под площадку.${S.fmt && FORMATS.find(x => x[0] === S.fmt) ? ' Вы выбрали «' + esc(fmtName(FORMATS.find(x => x[0] === S.fmt))) + '» — открыт самый подходящий кадр, нужная кнопка обведена.' : ''}</span>${rows}<div class="fr"><span class="fl">Дизайнеру</span><span class="fts"><button class="ft ok" data-act="sendone" data-v="${S.ph}"${S.sending ? ' disabled' : ''}>Оригинал без обрезки</button></span></div>
+    <div class="lg"><span><span class="ft ok">&nbsp;</span>подходит</span><span><span class="ft">&nbsp;</span>сильно обрежется</span><span><span class="ft no">&nbsp;</span>не хватит размера</span></div>
+    ${fix ? `<small>Для Яндекс Еды файл нужно ${fix}.</small>` : ''}</div>`;
+}
+function visible() {
+  const words = norm(S.q).split(' ').filter(w => w.length >= 2 && !STOP.has(w)).map(stem);
+  const restOk = p => S.rest === 'all' || p.rc === 'all' || p.rc === S.rest;
+  let qOk = p => words.every(w => p.hay.some(h => h.startsWith(w)));
+  const fmtOk = p => !S.fmt || p.files.some(f => fitsFmt(f, S.fmt));
+  const base = S.pos.filter(p => restOk(p) && fmtOk(p));
+  let pool = !words.length ? base : base.filter(qOk); // название, теги, имя файла
+  if (words.length && !pool.length) { qOk = p => words.every(w => p.hayG.some(h => h.startsWith(w))); pool = base.filter(qOk); } // раздел меню — только если иначе пусто
+  if (words.length) { const inT = p => words.every(w => p.hayT.some(h => h.startsWith(w))) ? 0 : 1; pool = pool.map((p, i) => [p, i]).sort((a, b) => inT(a[0]) - inT(b[0]) || a[1] - b[1]).map(x => x[0]); } // совпадение в названии — выше совпадений в тегах
+  return { words, pool, shown: pool.filter(p => S.sec === 'all' || p.sec === S.sec), qOk };
+}
+function tile(p) {
+  const bi = bestFor(p, S.fmt), f = p.files[0], img = (bi >= 0 && p.files[bi].ver ? p.files[bi] : null) || p.files.find(x => x.ver), n = p.files.length, sel = S.sel.has(p.key), dark = /^logo/.test(p.sec) && img && (img.bgc === 'тёмный' || /бел/i.test(img.title || p.title));
+  let badge = '', inner = '', cls = 'pic';
+  if (p.kindT === 'doc') badge = ext(f);
+  else if (p.kindT === 'font') badge = (ext(f) || 'шрифт') + ' · ' + pl(n, 'файл', 'файла', 'файлов');
+  else if (n > 1) badge = /^logo/.test(p.sec) ? pl(n, 'вариант', 'варианта', 'вариантов') : pl(n, 'фото', 'фото', 'фото');
+  else if (p.low) badge = 'сжато';
+  if (p.kindT === 'font') inner = `<span class="spec" style="font-family:${fontCss(p.title)};font-weight:${fontW(p.title)}"><span class="aa">Аа</span><span class="ln">Рыба Моя 1234</span></span>`;
+  else if (img) { cls += /^logo/.test(p.sec) ? ' logo ' + (dark ? 'dark' : 'light') : ''; inner = `<img src="${esc(imgUrl(img))}" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">`; }
+  else if (p.kindT === 'doc' || /^logo/.test(p.sec) || p.sec === 'menu' || p.sec === 'brand' || p.sec === 'deck') inner = `<span class="cover"><img src="${SIGN[p.rc] || SIGN.jp}" alt=""><b>${esc(p.title)}</b></span>`;
+  else inner = `<span class="cover"><img src="${SIGN[p.rc] || SIGN.jp}" alt=""><b style="font-size:15px;color:var(--ink2)">Картинка готовится</b></span>`;
+  const sub = [p.kindT === 'doc' ? ext(f) : '', SHORT(p.restaurant)].filter(Boolean).join(' · ');
+  return `<div class="tile${p.wide ? ' wide' : ''}"><button class="tbtn" data-act="open" data-k="${esc(p.key)}" aria-label="Открыть: ${esc(p.title)}"><span class="${cls}">${inner}${badge ? `<span class="badge">${esc(badge)}</span>` : ''}</span><span class="cap"><span class="t">${esc(p.title)}</span>${sub ? `<span class="s">${esc(sub)}</span>` : ''}${p.kindT === 'font' || /^logo/.test(p.sec) ? '' : useLine(p)}</span></button><button class="sel" data-act="sel" data-k="${esc(p.key)}" aria-pressed="${sel}" aria-label="${sel ? 'Убрать из подборки' : 'В подборку'}: ${esc(p.title)}"><span>${sel ? ICO.tick : ''}</span></button></div>`;
+}
+function renderCatalog() {
+  const c = catalogParts();
+  return c.head + `<div class="body" id="cbody">${c.body}</div><div id="cbar">${c.bar}</div>`;
+}
+function catalogParts() {
+  const { words, pool, shown, qOk } = visible();
+  const secs = SECS.filter(([id]) => id === 'all' || S.pos.some(p => p.sec === id) || id === S.sec || ['dish', 'interior', 'logo', 'menu', 'brand', 'font', 'deck'].includes(id));
+  const secsHtml = `<div id="secchips" class="chips${S.secsOpen ? ' wrap' : ''}" role="group" aria-label="Раздел"><button class="allb" data-act="secsall" aria-expanded="${!!S.secsOpen}">${S.secsOpen ? 'Свернуть' : 'Все разделы'}</button>${secs.map(([id, l]) => { const n = id === 'all' ? pool.length : pool.filter(p => p.sec === id).length; return `<button data-act="sec" data-v="${id}" aria-pressed="${S.sec === id}"${n ? '' : ' class="zero"'}>${l}<i>${n}</i></button>`; }).join('')}</div>`;
+  const head = header('Медиатека', `<label class="search">${ICO.lens}<input id="q" type="search" enterkeyhint="search" value="${esc(S.q)}" aria-label="Поиск по медиатеке" placeholder="Блюдо, зал, логотип… например «гунканы»" autocomplete="off"><button id="qx" data-act="clearq" aria-label="Очистить поиск" style="visibility:${S.q ? 'visible' : 'hidden'}">×</button></label>
+    <div class="seg" role="group" aria-label="Ресторан">${RESTS.map(([id, l]) => `<button data-act="rest" data-v="${id}" aria-pressed="${S.rest === id}">${l}</button>`).join('')}</div>
+    ${secsHtml}
+    <div class="chips" role="group" aria-label="Формат" style="padding-top:0"><span class="fmtl">Куда нужно:</span>${FORMATS.map(F => `<button data-act="fmt" data-v="${F[0]}" aria-pressed="${S.fmt === F[0]}">${fmtName(F)}</button>`).join('')}</div>`);
+  let body = '';
+  const nFiles = shown.reduce((a, p) => a + p.files.length, 0);
+  body += `<div class="sum"><span>${shown.length ? pl(shown.length, 'позиция', 'позиции', 'позиций') + ' · ' + pl(nFiles, 'файл', 'файла', 'файлов') : ''}</span><button class="link" data-act="reload" style="height:auto;font-size:12px;color:var(--mute)">↻ обновить</button></div>`;
+  if (!shown.length) {
+    let other = [];
+    if (words.length) {
+      other = SECS.filter(([id]) => id !== 'all' && id !== S.sec).map(([id, l]) => ({ l, n: pool.filter(p => p.sec === id).length, act: 'sec', v: id })).filter(x => x.n);
+      if (!other.length && S.rest !== 'all') { const any = S.pos.filter(qOk); other = RESTS.filter(([id]) => id !== 'all' && id !== S.rest).map(([id, l]) => ({ l: '«' + (id === 'jp' ? JP : 'Рыба Моя') + '»', n: any.filter(p => p.rc === id).length, act: 'rest', v: id })).filter(x => x.n); }
+    }
+    if (other.length) body += `<div class="note"><p style="color:var(--ink)">${esc(other[0].act === 'rest' ? `У этого ресторана по запросу «${S.q}» ничего нет. Есть у другого:` : `В разделе «${SECN[S.sec]}» по запросу «${S.q}» ничего нет. Нашлось в других:`)}</p><div style="display:flex;flex-wrap:wrap;gap:6px">${other.map(o => `<button class="outline" data-act="${o.act}" data-v="${o.v}">${esc(o.l)} · ${o.n}</button>`).join('')}</div></div>`;
+    else body += `<div class="empty"><div class="note" style="margin:0"><span class="tt">${words.length ? 'Ничего не нашла' : 'Здесь пока пусто'}</span><p>${esc(words.length ? `По запросу «${S.q}» в медиатеке ничего нет. Попробуйте другое слово — или напишите боту в чат: он задаст уточняющий вопрос.` : 'В этом разделе пока нет файлов. Пришлите их боту файлами — они появятся здесь.')}</p><button class="sec" data-act="reload">↻ Обновить — если только что загрузили</button></div></div>`;
+  }
+  const list = shown.slice(0, S.limit), groups = [];
+  for (const p of list) { const k = p.sec + '|' + (p.sec === 'dish' ? p.rc + '|' : '') + p.group; let g = groups.find(x => x.k === k); if (!g) { g = { k, name: p.group, sec: p.sec, items: [] }; groups.push(g); } g.items.push(p); }
+  for (const g of groups) {
+    const rs = [...new Set(g.items.map(p => p.rc))];
+    const rest = S.rest === 'all' && rs.length === 1 && rs[0] !== 'all' ? (rs[0] === 'jp' ? 'в Японии' : rs[0] === 'rm' ? 'Рыба Моя' : '') : '';
+    body += `<section><div class="gh"><h2>${esc(g.name)}</h2><span>${esc(rest)}</span></div><div class="grid">${g.sec === 'deck' ? '<div class="tile wide"><div class="cta"><img src="img/koi-cta.webp" alt="" aria-hidden="true"><b>Собрать презентацию</b><span>Напишите боту идею или список слайдов — он подберёт фото, а вы выберете. Соберёт PPTX и PDF в фирменном стиле.</span></div></div>' : ''}${g.items.map(tile).join('')}</div></section>`;
+  }
+  if (S.sec === 'deck' && !groups.some(g => g.sec === 'deck')) body += '<div class="grid" style="margin-top:14px"><div class="tile wide"><div class="cta"><img src="img/koi-cta.webp" alt="" aria-hidden="true"><b>Собрать презентацию</b><span>Напишите боту идею или список слайдов — он подберёт фото, а вы выберете. Соберёт PPTX и PDF в фирменном стиле.</span></div></div></div>';
+  if (shown.length > S.limit) body += `<button class="more" data-act="more">Показать ещё ${Math.min(60, shown.length - S.limit)} из ${shown.length - S.limit}</button>`;
+  const selP = [...S.sel].map(k => S.byKey[k]).filter(Boolean), selN = selP.reduce((a, p) => a + p.files.length, 0);
+  const bar = selP.length ? `<div class="selbar"><div><b>Выбрано: ${pl(selP.length, 'позиция', 'позиции', 'позиций')} · ${pl(selN, 'файл', 'файла', 'файлов')}</b><button class="link" data-act="clearsel">Снять выбор</button></div><button class="primary" data-act="sendsel"${S.sending ? ' disabled' : ''}>${S.sending ? 'Отправляю…' : 'Прислать в чат'}</button></div>` : '';
+  return { head, body, bar, secsHtml };
+}
+function refreshCatalog() { // поиск: обновляем только список — поле ввода не перерисовываем, клавиатура не прячется
+  const b = document.getElementById('cbody'), sb = document.getElementById('cbar'), x = document.getElementById('qx');
+  if (!b || !sb) return render();
+  const c = catalogParts(); b.innerHTML = c.body; sb.innerHTML = c.bar; b.scrollTop = 0;
+  const sc = document.getElementById('secchips'); if (sc) sc.outerHTML = c.secsHtml; // счётчики и выбранный раздел — под текущий запрос
+  if (x) x.style.visibility = S.q ? 'visible' : 'hidden';
+}
+function renderOpen() {
+  const p = S.open && S.byKey[S.open]; if (!p) return '';
+  const N = p.files.length, i = Math.min(Math.max(S.ph, 0), N - 1), cur = p.files[i], low = cur.kind === 'photo', dark = /^logo/.test(p.sec) && (cur.bgc === 'тёмный' || /бел/i.test(cur.title || p.title));
+  const photoLike = p.kindT === 'photo' || p.kindT === 'logo';
+  let hero;
+  if (p.kindT === 'font') hero = `<div class="hero"><div class="spec" style="font-family:${fontCss(p.title)};font-weight:${fontW(p.title)};padding:24px;gap:10px"><span style="font-size:88px;line-height:1">Аа</span><span style="font-size:17px;line-height:1.35;overflow-wrap:anywhere">АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ</span><span style="font-size:17px;line-height:1.35;overflow-wrap:anywhere">абвгдеёжзийклмнопрстуфхцчшщэюя 0123456789</span></div></div>`;
+  else if (cur.ver) hero = `<div class="hero${/^logo/.test(p.sec) ? ' logo' : ''}${dark ? ' dark' : ''}"><img src="${esc(imgUrl(cur, true))}" alt="${esc(p.title)}" onerror="if(!this.dataset.s){this.dataset.s=1;this.src='${esc(imgUrl(cur))}'}">${N > 1 ? `<span class="pos">${i + 1} / ${N}</span><button class="nav2" style="left:0" data-act="ph" data-v="${(i - 1 + N) % N}" aria-label="Предыдущее">${ICO.back}</button><button class="nav2" style="right:0" data-act="ph" data-v="${(i + 1) % N}" aria-label="Следующее">${ICO.next}</button>` : ''}</div>`;
+  else hero = `<div class="hero" style="aspect-ratio:4/3"><div class="cover" style="padding:28px"><img src="${SIGN[p.rc] || SIGN.jp}" alt="" style="width:64px;height:64px"><b style="font-size:34px">${esc(p.title)}</b><span class="kicker">${esc((p.restaurant || '').toUpperCase())}</span></div></div>`;
+  const strip = N > 1 ? `<div class="strip">${p.files.map((f, k) => `<button data-act="ph" data-v="${k}" aria-pressed="${k === i}" aria-label="Файл ${k + 1}">${f.ver ? `<img src="${esc(imgUrl(f))}" alt="" loading="lazy">` : ''}<i>${k + 1}</i></button>`).join('')}</div>` : '';
+  const meta = [p.restaurant, p.sec === 'dish' && !/^Не из меню/.test(p.group) ? 'название по меню, раздел «' + p.group + '»' : p.group].filter(Boolean).join(' · ');
+  const origN = p.files.filter(f => f.kind !== 'photo').length;
+  const sendL = p.kindT === 'doc' ? 'Прислать ' + (ext(cur) || 'файл') : p.kindT === 'font' ? 'Прислать шрифт' : N > 1 ? 'Прислать все ' + pl(N, /^logo/.test(p.sec) ? 'вариант' : 'файл', /^logo/.test(p.sec) ? 'варианта' : 'файла', /^logo/.test(p.sec) ? 'вариантов' : 'файлов') : 'Прислать в чат';
+  const sendN = p.low ? (origN ? pl(origN, 'оригинал', 'оригинала', 'оригиналов') + ' без сжатия + ' + p.low + ' сжатое' : 'оригинала нет — придёт сжатым') : N > 1 ? 'оригиналами, без сжатия' : 'оригиналом, без сжатия';
+  const how = p.kindT === 'doc' ? 'В чат придёт файл целиком — его можно сразу переслать или распечатать.' : p.kindT === 'font' ? 'Шрифт приходит файлами — их можно установить на компьютер.' : 'Приходят файлами: без сжатия Telegram, в полном размере — как сняли или нарисовали.';
+  const sel = S.sel.has(p.key);
+  return `<div class="ov" role="dialog" aria-label="${esc(p.title)}"><div class="ovh"><button class="back" data-act="close">${ICO.back}Каталог</button><span class="kicker">${esc(SECN[p.sec])}</span></div><div class="ovb">${hero}${strip}
+    <div class="info"><div style="display:flex;flex-direction:column;gap:6px"><h1>${esc(p.title)}</h1>${meta ? `<span class="meta">${esc(meta)}</span>` : ''}</div>
+    ${photoLike ? `<div class="q${low ? ' low' : ''}"><span>${N > 1 ? (/^logo/.test(p.sec) ? 'Вариант ' : 'Файл ') + (i + 1) + ' из ' + N + (cur.title && cur.title !== p.title ? ': ' + esc(cur.title) : '') : esc(ext(cur))}</span><span>${low ? 'только сжатая копия' : 'оригинал'}</span></div>` : ''}
+    ${photoLike && ['dish', 'drink', 'interior', 'people', 'detail', 'other'].includes(p.sec) ? fitHtml(cur) : isPic(cur) && cur.w && cur.h && !/^logo/.test(p.sec) ? `<div class="fit"><b>${esc(useOf(cur.w, cur.h))} · ${cur.w}×${cur.h} px</b>${N > 1 ? '<small>У этой позиции несколько файлов — листайте, размер у каждого свой.</small>' : ''}</div>` : ''}
+    ${low ? '<p class="warn">Оригинала этого снимка в медиатеке нет — придёт сжатым, с пометкой. Попросите исходник у фотографа и пришлите боту файлом.</p>' : ''}
+    <div class="acts"><button class="primary" data-act="sendone" data-v="all"${S.sending ? ' disabled' : ''}><span>${S.sending ? 'Отправляю…' : esc(sendL)}</span><small>${esc(sendN)}</small></button>
+      ${N > 1 ? `<button class="sec" data-act="sendone" data-v="${i}"${S.sending ? ' disabled' : ''}>Только этот — № ${i + 1}</button>` : ''}
+      <button class="sec soft" data-act="sel" data-k="${esc(p.key)}" aria-pressed="${sel}">${sel ? 'В подборке — убрать' : 'Добавить в подборку'}</button>
+      ${can('edit') ? `<button class="sec soft" data-act="edit">Изменить подпись</button>` : ''}</div>
+    ${S.me && ['owner', 'admin', 'curator'].includes(S.me.role) && (p.sec === 'dish' || /^logo/.test(p.sec)) ? (() => { const cur = p.files.every(f => f.both) ? 'both' : p.rc === 'jp' ? 'jp' : p.rc === 'rm' ? 'rm' : '';
+      const opts = [['jp', 'Только в Японии'], ['rm', 'Только Рыба Моя'], ...(p.sec === 'dish' ? [['both', 'В обоих']] : [])];
+      return `<div style="display:flex;flex-direction:column;gap:8px"><span class="meta">Где показывать${N > 1 ? ' — все ' + N + ' файла позиции' : ''}</span><div class="seg" role="group" aria-label="Где показывать" style="margin:0;grid-template-columns:repeat(${opts.length},minmax(0,1fr))">${opts.map(([m, l]) => `<button data-act="setrest" data-v="${m}" aria-pressed="${cur === m}"${S.restBusy ? ' disabled' : ''}>${l}</button>`).join('')}</div></div>`; })() : ''}
+    <div class="how">${esc(how)} Файлы придут в чат с ботом через несколько секунд.</div></div></div></div>`;
+}
+
+// ---------- обучение при первом входе ----------
+const TOUR_KEY = 'mt_tour_v1';
+const tourSeen = () => { try { return localStorage.getItem(TOUR_KEY) === '1'; } catch (e) { return false; } };
+const tourDone = () => { try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) {} };
+function tourThumbs(n, marks) {
+  const pics = S.pos.filter(p => p.sec === 'dish' && p.files.some(f => f.ver)).slice(0, n).map(p => p.files.find(f => f.ver));
+  return `<div class="thumbs">${Array.from({ length: n }, (_, i) => `<span>${pics[i] ? `<img src="${esc(imgUrl(pics[i]))}" alt="">` : ''}${marks ? `<b class="${marks.includes(i) ? 'ok' : ''}">${marks.includes(i) ? '✓' : ''}</b>` : ''}</span>`).join('')}</div>`;
+}
+function renderTour() {
+  if (S.tour == null) return '';
+  const cnt = id => S.pos.filter(p => p.sec === id).length;
+  const steps = [
+    () => `<div class="stage intro"><div class="logo"><img class="sign" src="img/jp-sign.webp" alt="" width="637" height="573"><img class="wm" src="img/jp-word.webp" alt="Рыба Моя" width="637" height="106"><img class="sub" src="img/jp-sub.webp" alt="в Японии" width="637" height="40"></div><span class="kick">Медиатека</span><span class="line" aria-hidden="true"></span><p>Все фото, логотипы, макеты и меню двух брендов в одном месте. Покажу за минуту, как найти нужный файл.</p></div>`,
+    () => `<div class="stage in"><span class="eyebrow">Два бренда</span><h1>Сначала выберите ресторан</h1><div class="brands"><div><img src="img/sign-rm.webp" alt=""><b>Рыба Моя</b>Рыбный ресторан: Тверская, Китай-город, Цветной, Новинский</div><div><img src="img/sign-jp.webp" alt=""><b>в Японии</b>Суши, роллы и горячее в расписной посуде</div></div><div class="mock"><div class="trow"><span class="chip dark">Все рестораны</span><span class="chip">Рыба Моя</span><span class="chip">в Японии</span></div></div><p>Переключатель стоит под поиском. Файлы двух брендов не смешиваются: логотипы, шрифты и посуда у них разные.</p></div>`,
+    () => `<div class="stage in"><span class="eyebrow">Поиск</span><h1>Напишите одно-два слова</h1><div class="mock"><div class="field">${ICO.lens}<span class="type">гунканы</span></div><div class="trow"><span class="chip">суши лосось</span><span class="chip">веранда</span><span class="chip">логотип белый</span><span class="chip">масленица</span></div></div><p>Ищите как говорите: блюдо, зал, акция, предмет. Полное название из меню писать не нужно. Новый запрос всегда ищет по всем разделам.</p></div>`,
+    () => `<div class="stage in"><span class="eyebrow">Разделы</span><h1>Или идите по разделам</h1><div class="mock"><div class="trow"><span class="chip dark">Все разделы</span><span class="chip on">Блюда<i>${cnt('dish')}</i></span><span class="chip">Напитки<i>${cnt('drink')}</i></span><span class="chip">Интерьер<i>${cnt('interior')}</i></span><span class="chip">Макеты<i>${cnt('layout')}</i></span><span class="chip">Логотипы<i>${cnt('logo')}</i></span><span class="chip">Меню<i>${cnt('menu')}</i></span></div></div><p>Число рядом — сколько там позиций. Кнопка «Все разделы» раскрывает полный список: упаковка, полиграфия, презентации, шрифты, брендбук.</p><p>Напитки лежат отдельно от блюд. Коктейли ищите словами «коктейль», «лимонад», «бокал».</p></div>`,
+    () => `<div class="stage in"><span class="eyebrow">Формат и размер</span><h1>Отберите фото под площадку</h1><div class="mock"><div class="trow"><span style="font-size:12px;color:var(--mute)">Куда нужно:</span><span class="chip on">Сторис</span><span class="chip">Пост в ленту</span><span class="chip">Яндекс Еда</span><span class="chip">Печать A3</span></div><b style="font-size:14px">5342×8009 px · 43 Мп · 35,3 МБ</b><div class="trow"><span class="ft2 ok">Сторис</span><span class="ft2 ok">Пост в ленту</span><span class="ft2">Квадратный пост</span><span class="ft2 ok">Яндекс Еда</span></div></div><p>Ряд «Куда нужно» оставляет только кадры, которым хватит размера. В карточке фото нажмите, куда оно нужно, — бот пришлёт уже обрезанное. Цвет кнопок: синяя заливка — подходит, рамка — сильно обрежется, серая — не хватит размера.</p></div>`,
+    () => `<div class="stage in"><span class="eyebrow">Как забрать файл</span><h1>Нажмите «Прислать в чат»</h1><div class="mock">${tourThumbs(3)}<div class="btnp">Прислать в чат<small>оригиналом, без сжатия</small></div></div><p>Откройте плитку — внутри все кадры этой позиции. Файл придёт в чат с ботом в полном размере, оттуда его можно сохранить или переслать.</p></div>`,
+    () => `<div class="stage in"><span class="eyebrow">Несколько фото сразу</span><h1>Отметьте квадратики на плитках</h1><div class="mock">${tourThumbs(3, [0, 2])}<div class="trow" style="justify-content:space-between"><b style="font-size:14px">Выбрано: 2 позиции</b><span class="chip on">Прислать в чат</span></div></div><p>Квадратик в углу плитки добавляет позицию в подборку. Внизу появится полоса с кнопкой — все выбранные файлы придут одним разом.</p></div>`,
+    () => `<div class="stage in"><span class="eyebrow">Бот в чате</span><h1>Можно просто написать боту</h1><div class="mock"><span class="say">лосось для сторис, вертикальное</span><span class="ans">Присылаю вертикальные фото с лососем…</span><span class="say">пришли оригинал первой</span><span class="say">обрежь вторую под квадрат</span><span class="ans">Квадрат 1:1: 2160×2160 px, вырезано по центру</span></div><p>Бот понимает обычные фразы и помнит, о чём шла речь. Свои файлы присылайте ему через скрепку → «Файл», с подписью, что это и какой ресторан.</p></div>`,
+  ];
+  const i = Math.min(S.tour, steps.length - 1), last = i === steps.length - 1;
+  return `<div class="tour" role="dialog" aria-label="Обучение">${last ? '' : '<button class="skip" data-act="tourend">Пропустить</button>'}${steps[i]()}<div class="foot"><div class="dots" aria-hidden="true">${steps.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>${i > 0 ? '<button data-act="tourprev">Назад</button>' : ''}<button class="next" data-act="${last ? 'tourend' : 'tournext'}">${i === 0 ? 'Начать' : last ? 'Попробовать' : 'Дальше'}</button></div></div>`;
+}
+function renderToast() { return S.toast ? `<div class="toast" role="status"><span>${esc(S.toast.text)}</span><div>${S.toast.go ? '<button class="go" data-act="gochat">Перейти в чат</button>' : ''}<button data-act="hidetoast">Понятно</button></div></div>` : ''; }
+// ---------- правка подписи (кому владелец включил) ----------
+const SEC_RU = ['блюдо', 'напиток', 'интерьер', 'фасад', 'логотип', 'шрифт', 'меню', 'брендбук', 'шеф', 'команда', 'событие', 'другое'];
+const REST_RU = ['Рыба Моя', 'Рыба Моя в Японии', 'Рыба Моя на Тверской', 'Рыба Моя на Цветном', 'Рыба Моя на Новинском', 'Рыба Моя в Китай-городе'];
+function renderEdit() {
+  const e = S.edit; if (!e) return '';
+  const opt = (list, cur) => list.map(x => `<option${x === cur ? ' selected' : ''}>${esc(x)}</option>`).join('');
+  return `<div class="ov" role="dialog" aria-label="Изменить подпись"><div class="ovh"><button class="back" data-act="editx">${ICO.back}Назад</button><span class="kicker">Подпись</span></div><div class="ovb"><div class="form">
+    <label class="fld"><span>Название</span><input id="e_title" value="${esc(e.title)}" autocomplete="off"></label>
+    <label class="fld"><span>Раздел</span><select id="e_sec">${opt(SEC_RU, e.section)}</select></label>
+    <label class="fld"><span>Ресторан</span><select id="e_rest">${opt(REST_RU, e.restaurant)}</select></label>
+    <label class="fld"><span>Теги через запятую</span><input id="e_tags" value="${esc(e.tags)}" autocomplete="off"></label>
+    <button class="primary" data-act="editsave">Сохранить</button>
+    ${can('del') ? '<button class="danger" data-act="edittrash">Убрать в корзину</button>' : ''}</div></div></div>`;
+}
+// ---------- люди и права (владелец и те, кому он разрешил) ----------
+const permLine = p => p.role === 'owner' ? 'Все права' : (PERMS.filter(([k]) => p.perms && p.perms[k]).map(x => x[1].toLowerCase()).join(', ') || 'Только смотрит и скачивает');
+function renderPeople() {
+  const L = S.people || [];
+  return header('Люди', '') + `<div class="body"><button class="primary" data-act="invite" style="width:100%">Пригласить человека</button>
+    <p class="meta" style="margin:10px 0 6px">Новый человек только смотрит и скачивает. Остальное включаете вы.</p>
+    ${L.map((p, i) => `<button class="pp" data-act="person" data-v="${i}"${p.role === 'owner' ? ' disabled' : ''}><span class="nm">${esc(p.name)}<small>${esc(permLine(p))}</small></span><span class="rl${p.role === 'owner' ? ' own' : ''}">${p.role === 'owner' ? 'Владелец' : PERMS.some(([k]) => p.perms && p.perms[k]) ? 'С правами' : 'Пользователь'}</span></button>`).join('')}</div>`;
+}
+function renderPerson() {
+  const p = S.person != null && S.people ? S.people[S.person] : null; if (!p) return '';
+  return `<div class="ov" role="dialog" aria-label="${esc(p.name)}"><div class="ovh"><button class="back" data-act="personx">${ICO.back}Люди</button><span class="kicker">Права</span></div><div class="ovb"><div class="form">
+    <div style="display:flex;flex-direction:column;gap:6px"><h1 style="margin:0;font-family:ArticaPro,sans-serif;font-weight:500;font-size:26px;line-height:1.1">${esc(p.name)}</h1><span class="meta">Смотреть и скачивать может всегда. Остальное — переключателями.</span></div>
+    <div>${PERMS.map(([k, l, d]) => `<button class="sw" data-act="perm" data-v="${k}" aria-pressed="${!!(p.perms && p.perms[k])}"><span class="nm">${l}<small>${d}</small></span><i></i></button>`).join('')}</div>
+    <button class="danger" data-act="kick">Закрыть доступ</button></div></div></div>`;
+}
+async function peopleLoad() { try { const r = await rpc('media_app_people', { p_init: INIT }); S.people = r && r.ok ? r.people : []; } catch (e) { S.people = []; } render(); }
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return; const a = b.dataset.act, v = b.dataset.v;
+  if (a === 'edit') { const p = S.byKey[S.open], f = p && p.files[Math.min(S.ph, p.files.length - 1)]; if (!f) return; S.edit = { id: f.id, title: f.title, section: f.section, restaurant: f.restaurant, tags: (f.tags || '').split(' ').slice(0, 6).join(', ') }; return render(); }
+  if (a === 'editx') { S.edit = null; return render(); }
+  if (a === 'editsave' || a === 'edittrash') { const g = id => document.getElementById(id).value.trim(); const body = a === 'edittrash' ? { p_init: INIT, p_id: S.edit.id, p: { status: 'archived' } } : { p_init: INIT, p_id: S.edit.id, p: { title: g('e_title'), section: g('e_sec'), restaurant: g('e_rest'), tags: g('e_tags').split(',').map(x => x.trim()).filter(Boolean) } };
+    try { const r = await rpc('media_app_edit', body); if (r && r.ok) { S.edit = null; if (a === 'edittrash') S.open = null; toast(a === 'edittrash' ? 'Убрано в корзину. Вернуть — команда /trash в боте.' : 'Сохранено.'); return boot(); } toast('Не сохранилось: нет прав.'); } catch (x) { toast('Нет связи — не сохранилось.'); } return; }
+  if (a === 'person') { S.person = Number(v); return render(); }
+  if (a === 'personx') { S.person = null; return render(); }
+  if (a === 'perm') { const p = S.people[S.person]; p.perms = Object.assign({}, p.perms, { [v]: !(p.perms && p.perms[v]) }); render(); try { await rpc('media_app_perm_set', { p_init: INIT, p_user: p.id, p_perms: p.perms }); } catch (x) { toast('Нет связи — право не сохранилось.'); } return; }
+  if (a === 'kick') { const p = S.people[S.person]; try { await rpc('media_app_perm_set', { p_init: INIT, p_user: p.id, p_perms: null }); S.people.splice(S.person, 1); S.person = null; toast('Доступ закрыт.'); } catch (x) { toast('Нет связи.'); } return render(); }
+  if (a === 'invite') { try { const r = await rpc('media_app_invite', { p_init: INIT }); if (r && r.ok && r.link) { const u = 'https://t.me/share/url?url=' + encodeURIComponent(r.link) + '&text=' + encodeURIComponent('Доступ в медиатеку «Рыба Моя»'); tg && tg.openTelegramLink ? tg.openTelegramLink(u) : window.open(u); } else toast('Не получилось создать приглашение.'); } catch (x) { toast('Нет связи.'); } return; }
+  if (a === 'tab' && v === 'people' && !S.people) peopleLoad();
+});
+function renderHelp() {
+  const isCur = S.me && ['owner', 'admin', 'curator'].includes(S.me.role);
+  const step = (n, title, text, extra) => `<section class="step"><span class="num">${n}</span><h2>${title}</h2>${text.map(t => `<p>${t}</p>`).join('')}${extra || ''}</section>`;
+  const ex = list => `<div class="ex">${list.map(q => `<button data-act="helpq" data-v="${esc(q)}">${esc(q)}</button>`).join('')}</div>`;
+  const say = list => list.map(q => `<div class="say">${esc(q)}</div>`).join('');
+  let n = 0;
+  const blocks = [
+    step('Шаг ' + (++n), 'Найдите файл словами', ['В поле поиска на вкладке «Каталог» напишите, что нужно: блюдо, зал, логотип, акцию. Достаточно одного-двух слов.', 'Нажмите пример — каталог сразу покажет результат:'], ex(['гунканы', 'устрицы', 'веранда', 'логотип белый', 'масленица', 'подарочная коробка'])),
+    step('Шаг ' + (++n), 'Сузьте выбор', ['Под поиском три ряда кнопок. Первый — ресторан: все, «Рыба Моя» или «в Японии». Второй — раздел: блюда, интерьер, макеты, логотипы и остальное; рядом с названием — сколько там позиций. Кнопка «Все разделы» раскрывает весь список сразу.', 'Третий ряд, «Куда нужно», оставляет только те фото, которых хватит по размеру: сторис, пост, Яндекс Карты, сайт, печать A3–A5.', 'Если разделы опустели — проверьте, не остался ли текст в поиске или нажатый фильтр. Крестик в поиске всё сбрасывает.']),
+    step('Шаг ' + (++n), 'Откройте карточку', ['Нажмите на плитку. В карточке — все кадры этой позиции, размер оригинала в пикселях и мегабайтах и кнопки форматов: синяя заливка — подходит, синяя рамка — сильно обрежется, серая — не хватит размера.', 'Нажмите на формат — например «Квадратный пост» или «Яндекс Еда — фото блюда» — и бот пришлёт этот кадр уже обрезанным под него, готовым файлом JPG. Режет по центру кадра.']),
+    step('Шаг ' + (++n), 'Получите оригинал', ['Кнопка «Прислать в чат» отправляет файл в чат с ботом — без сжатия, в полном размере. Если кадров несколько, можно прислать все или только выбранный.', 'Нужно несколько разных позиций — отметьте квадратик в углу плиток и нажмите «Прислать в чат» внизу.']),
+    step('Шаг ' + (++n), 'Или просто напишите боту', ['Бот в чате понимает обычные фразы и сам подберёт фото. Потом можно уточнять, не начиная заново:'], say(['лосось для сторис, вертикальное', 'устрицы для печати А3', 'зал Японии для сайта', 'логотип «в Японии» белый', 'пришли оригинал первой', 'обрежь вторую под квадрат', 'что делали на Масленицу', 'идеи на Новый год'])),
+    step('Шаг ' + (++n), 'Добавьте свои файлы', ['В чате с ботом нажмите скрепку и выберите «Файл» — не «Фото», иначе Telegram сожмёт снимок.', 'В подписи напишите, что это и какой ресторан: «гунканы, Япония», «веранда Тверской». Можно прислать сразу много файлов.', 'Если такой файл уже есть, бот скажет об этом и не будет сохранять копию.']),
+  ];
+  if (isCur) blocks.push(step('Кураторам', 'Порядок в медиатеке', ['Эти команды работают только у владельца, администраторов и кураторов:'], say(['/quality — фото плохого качества и что с ними делать', '/merge — объединить одно и то же под разными названиями', '/covers — обложки для PDF и презентаций', '/trash — корзина, оттуда файл можно вернуть', '/halls — отметить адрес у фото залов', '/people и /invite — люди и приглашения', '/import ссылка — загрузить папку с Яндекс Диска'])));
+  return header('Как пользоваться', '') + `<div class="body help"><button class="primary" data-act="tour" style="width:100%;margin-bottom:4px">Показать обучение с начала</button>${blocks.join('')}</div>`;
+}
+function renderMenu() {
+  const t = S.mtab;
+  const tabsH = `<div class="seg" role="group" aria-label="Что показать" style="margin:4px 0 0">${[['jp', 'в Японии'], ['rm', 'Рыба Моя'], ['bar', 'Бар']].map(([id, l]) => `<button data-act="mtab" data-v="${id}" aria-pressed="${t === id}" style="height:40px;font-size:14px">${l}</button>`).join('')}</div>`;
+  let head = '', body = '';
+  if (t !== 'bar') {
+    let total = 0, have = 0;
+    const secs = MENU[t].map(([g, list]) => {
+      const rows = list.map(d => { const ps = S.byDish[t].get(dishNorm(d)) || []; total++; if (ps.length) have++; return { d, ps }; });
+      return { g, rows, got: rows.filter(r => r.ps.length).length };
+    });
+    const pct = total ? Math.round(have * 100 / total) : 0;
+    head = `<div class="prog"><div class="r"><span>Есть фото у <b style="font-family:inherit;font-size:15px;color:var(--ink)">${have}</b> из ${total} блюд</span><b>${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div></div>${total > have ? `<label class="chk"><input type="checkbox" data-act="only"${S.only ? ' checked' : ''}>Только блюда без фото (${total - have})</label>` : ''}`;
+    if (total && have === total) body += '<p class="barbox" style="border-left-color:var(--blue)">У всех блюд меню есть фото.</p>';
+    for (const s of secs) {
+      const rows = S.only ? s.rows.filter(r => !r.ps.length) : s.rows; if (!rows.length) continue;
+      body += `<section class="ms"><div class="gh"><h2>${esc(s.g)}</h2><span>${s.got} из ${s.rows.length}</span></div>${rows.map(r => {
+        if (r.ps.length) { const files = r.ps.reduce((a, p) => a.concat(p.files), []), im = files.find(f => f.ver);
+          return `<div class="row"><button class="th" data-act="open" data-k="${esc(r.ps[0].key)}" aria-label="Смотреть: ${esc(r.d)}">${im ? `<img src="${esc(imgUrl(im))}" alt="" loading="lazy">` : ''}${files.length > 1 ? `<i>${files.length}</i>` : ''}</button><span class="nm">${esc(r.d)}</span><span class="ok">✓ ${files.length > 1 ? pl(files.length, 'файл', 'файла', 'файлов') : 'есть'}</span></div>`; }
+        return `<div class="row"><div class="no">нет<br>фото</div><span class="nm">${esc(r.d)}</span><button class="up" data-act="upload" data-v="${esc(r.d)}">Загрузить</button></div>`;
+      }).join('')}</section>`;
+    }
+  } else {
+    body += '<p class="barbox">Фото напитков ищите в каталоге. Здесь — названия из барных карт: как в меню, слово в слово.</p>';
+    for (const b of MENU.bar) body += `<section><h2 class="bh">${esc(b.rest)}</h2>${b.groups.map(([g, list]) => `<div class="bg2"><span class="kicker">${esc(g)}</span><span>${list.map(esc).join(' · ')}</span></div>`).join('')}</section>`;
+  }
+  return `<header class="mh"><img class="koi" src="img/koi.webp" alt="" aria-hidden="true"><div class="brand" style="padding:0"><img src="img/wordmark.png" alt="Рыба Моя"><span class="kicker">Медиатека · меню</span></div>${tabsH}${head}</header><div class="band" aria-hidden="true"></div><div class="body" style="padding-top:4px">${body}</div>`;
+}
+function renderReview() {
+  const r = S.rv, it = r && r.item;
+  let body = '';
+  if (!r) body = '<div class="card"><div class="ph skel"></div><div class="in"><span class="sr">Загружаю…</span></div></div>';
+  else if (r.error) body = `<div class="note"><span class="tt">Не получилось загрузить</span><p>${esc(r.error)}</p><button class="sec" data-act="rvload">Попробовать ещё раз</button></div>`;
+  else if (!it) body = `<div class="note"><span class="tt" style="font-size:26px;color:var(--blue)">Всё проверено</span><p>${S.rvFixed ? 'Исправлено подписей: ' + S.rvFixed + '. ' : ''}${S.rvSkip ? 'Пропущено: ' + S.rvSkip + ' — они остались в списке. ' : ''}Фото находятся по точным названиям из меню.</p>${S.rvSkip ? '<button class="sec" data-act="rvagain">Показать пропущенные</button>' : ''}</div>`;
+  else {
+    const im = it.img ? SB + '/storage/v1/object/public/media-img/' + it.id + (it.m ? '-m.jpg' : '-s.jpg') + '?v=' + it.img : '';
+    const opts = (it.opts || []).map((o, k) => `<button class="opt" data-act="rvpick" data-v="${k}"${S.rvBusy ? ' disabled' : ''}><span>${esc(o)}</span><small>${esc(menuOf(o))}</small></button>`).join('');
+    body = `<article class="card"><div class="ph">${im ? `<img src="${esc(im)}" alt="${esc(it.title || '')}">` : ''}</div><div class="in">
+      <div style="display:flex;flex-direction:column;gap:4px"><span class="lb">ИИ подписал</span><span class="ai">${esc(it.title || '—')}${it.restaurant ? ' · ' + esc(it.restaurant) : ''}</span>${(it.opts || []).length ? '<span style="font-size:13px;color:var(--red)">Не уверен: под фото подходят несколько блюд меню.</span>' : '<span style="font-size:13px;color:var(--red)">Не уверен: такого точного названия нет в меню.</span>'}</div>
+      <span class="qq">Как называется блюдо?</span><div class="acts">${opts}<button class="opt" data-act="rvpick" data-v="-1"${S.rvBusy ? ' disabled' : ''}><span>✓ Оставить «${esc(it.title || '')}»</span><small>подпись верная</small></button></div>
+      ${S.rvOwn ? `<div class="own"><input id="rvown" placeholder="Название из меню" aria-label="Своё название" enterkeyhint="done"><button class="primary" data-act="rvsave">Сохранить</button></div>` : ''}
+      <div class="two"><button data-act="rvskip">Пропустить</button><button data-act="rvown">✎ Своё название</button></div></div></article>`;
+  }
+  const left = r && !r.error ? r.left : 0, done = S.rvFixed + S.rvSkip, pct = left + done ? Math.round(done * 100 / (left + done)) : 0;
+  return `<header class="mh"><img class="koi" src="img/koi.webp" alt="" aria-hidden="true"><div class="brand" style="padding:0"><img src="img/wordmark.png" alt="Рыба Моя"><span class="kicker">Медиатека · проверка</span></div>
+    <div style="position:relative;display:flex;justify-content:space-between;align-items:baseline;margin-top:4px"><h1 style="margin:0;font-family:ArticaPro,sans-serif;font-weight:500;font-size:26px;line-height:1">Проверка</h1><span style="font-size:14px;color:var(--ink2)">осталось: <b style="font-weight:500">${left}</b></span></div>
+    <div class="bar"><i style="width:${pct}%;background:var(--blue)"></i></div><span style="font-size:13px;line-height:1.4;color:var(--ink2)">Фото, где ИИ не уверен в названии блюда. Одно нажатие — и подпись исправлена.</span></header><div class="band" aria-hidden="true"></div><div class="body" style="padding-top:14px">${body}${S.rvLast ? `<p class="ok2" role="status">✓ ${esc(S.rvLast)}</p>` : ''}</div>`;
+}
+const menuOf = name => { const n = dishNorm(name), j = MENU_IDX.jp.has(n), r = MENU_IDX.rm.has(n); return j && r ? 'есть в меню обоих ресторанов' : j ? 'меню «Рыба Моя в Японии»' : r ? 'меню «Рыба Моя»' : 'нет в меню'; };
+
+// ---------- действия ----------
+async function setRest(mode) {
+  const p = S.open && S.byKey[S.open]; if (!p || S.restBusy) return;
+  S.restBusy = true; render();
+  try {
+    const r = await rpc('media_app_rest', { p_init: INIT, p_ids: p.files.map(f => f.id), p_mode: mode });
+    S.restBusy = false;
+    if (r && r.ok) { haptic('ok'); S.open = null; await boot(true); toast('Готово: «' + p.title + '» — ' + { jp: 'только в «Рыба Моя в Японии»', rm: 'только в «Рыба Моя»', both: 'в обоих ресторанах' }[mode]); }
+    else { haptic('err'); toast(r && r.error === 'not_allowed' ? 'Где показывать, решает куратор.' : 'Не сохранилось — попробуйте ещё раз.'); }
+  } catch (e) { S.restBusy = false; toast('Нет связи — не сохранилось.'); }
+}
+function toast(text, go) { S.toast = { text, go: !!go }; render(); clearTimeout(S._tt); S._tt = setTimeout(() => { S.toast = null; render(); }, 9000); }
+const haptic = k => { try { tg && tg.HapticFeedback && (k === 'ok' ? tg.HapticFeedback.notificationOccurred('success') : k === 'err' ? tg.HapticFeedback.notificationOccurred('error') : tg.HapticFeedback.selectionChanged()); } catch (e) {} };
+async function send(files, fmt) {
+  if (S.sending || !files.length) return;
+  if (files.length > 60) return toast('За один раз — до 60 файлов, а выбрано ' + files.length + '. Снимите часть отметок и отправьте в два приёма.');
+  S.sending = true; render();
+  try {
+    const FM = fmt ? FORMATS.find(x => x[0] === fmt) : null;
+    const r = await rpc('media_app_send', FM ? { p_init: INIT, p_ids: files.map(f => f.id), p_fmt: fmt } : { p_init: INIT, p_ids: files.map(f => f.id) });
+    if (r && r.ok) {
+      const low = files.filter(f => f.kind === 'photo').length, orig = files.length - low;
+      haptic('ok');
+      if (FM) toast('Вырезаю под «' + fmtName(FM) + '» и отправляю в чат — придёт готовым файлом JPG через несколько секунд.', true); else
+      toast((orig ? 'Отправляю в чат ' + pl(orig, 'файл', 'файла', 'файлов') + ' оригиналами — без сжатия.' : 'Отправляю в чат.') + (low ? ' ' + low + ' — только сжатые копии, придут с пометкой.' : '') + ' Придут через несколько секунд.', true);
+      S.sel.clear();
+    } else { haptic('err'); toast(r && r.error === 'limit' ? 'Слишком много отправок за час — подождите немного.' : r && r.error === 'empty' ? 'Эти файлы больше недоступны — обновите каталог.' : r && r.error === 'auth' ? 'Вход устарел: закройте каталог и откройте снова кнопкой «Каталог».' : 'Не получилось отправить. Попробуйте ещё раз.'); }
+  } catch (e) { haptic('err'); toast(e.message === 'net' ? 'Нет связи — проверьте интернет и попробуйте ещё раз.' : 'Не получилось отправить. Попробуйте ещё раз.'); }
+  finally { S.sending = false; render(); }
+}
+async function rvLoad() {
+  S.rv = null; render();
+  try { const r = await rpc('media_app_review', { p_init: INIT, p_skip: S.rvSkip }); S.rv = r && r.ok ? r : { error: r && r.error === 'not_allowed' ? 'Проверка — для кураторов.' : 'Попробуйте ещё раз через минуту.' }; if (r && r.ok) S.me.review = r.left; }
+  catch (e) { S.rv = { error: e.message === 'net' ? 'Нет связи.' : 'Попробуйте ещё раз через минуту.' }; }
+  render();
+}
+async function rvSet(k, title) {
+  const it = S.rv && S.rv.item; if (!it || S.rvBusy) return;
+  S.rvBusy = true; render();
+  try {
+    const r = await rpc('media_app_review_set', { p_init: INIT, p_id: it.id, p_k: k, p_title: title || null });
+    if (r && r.ok) { haptic('ok'); S.rvFixed++; S.rvLast = 'Сохранено: ' + (r.title || it.title); S.rvOwn = false;
+      const p = S.items.find(x => x.id === it.id); if (p && r.title) p.title = r.title; }
+    else { haptic('err'); S.rvLast = 'Не сохранилось — попробуйте ещё раз.'; }
+  } catch (e) { S.rvLast = 'Нет связи — не сохранилось.'; }
+  S.rvBusy = false; await rvLoad();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const a = b.dataset.act, v = b.dataset.v, k = b.dataset.k;
+  if (a === 'only') return; // флажок — в change
+  if (a === 'tab') { S.tab = v; S.open = null; S.toast = null; if (v === 'review' && !S.rv) rvLoad(); render(); document.querySelector('.body') && (document.querySelector('.body').scrollTop = 0); return; }
+  if (a === 'rest') { S.rest = v; S.limit = 60; haptic(); return render(); }
+  if (a === 'fmt') { S.fmt = S.fmt === v ? '' : v; S.limit = 60; haptic(); return render(); }
+  if (a === 'tour') { S.tour = 0; S.open = null; return render(); }
+  if (a === 'tournext') { S.tour++; haptic(); return render(); }
+  if (a === 'tourprev') { S.tour = Math.max(0, S.tour - 1); return render(); }
+  if (a === 'tourend') { S.tour = null; tourDone(); S.tab = 'cat'; return render(); }
+  if (a === 'secsall') { S.secsOpen = !S.secsOpen; haptic(); render(); return; }
+  if (a === 'helpq') { S.q = v; S.sec = 'all'; S.fmt = ''; S.rest = 'all'; S.tab = 'cat'; S.limit = 60; haptic(); render(); return; }
+  if (a === 'sec') { S.sec = v; S.secsOpen = false; S.limit = 60; haptic(); render(); const c = document.querySelector('.chips [aria-pressed=true]'); c && c.scrollIntoView({ inline: 'center', block: 'nearest' }); return; }
+  if (a === 'clearq') { S.q = ''; S.limit = 60; S._focusQ = true; return render(); }
+  if (a === 'more') { S.limit += 60; S._keepScroll = true; return render(); }
+  if (a === 'open') { S.open = k; const bp = S.byKey[k], bi = bp ? bestFor(bp, S.fmt) : -1; S.ph = bi >= 0 ? bi : 0; return render(); }
+  if (a === 'close') { S.open = null; S._keepScroll = true; return render(); }
+  if (a === 'ph') { S.ph = Number(v) || 0; return render(); }
+  if (a === 'sel') { if (S.sel.has(k)) S.sel.delete(k); else S.sel.add(k); haptic(); S._keepScroll = true; return render(); }
+  if (a === 'clearsel') { S.sel.clear(); S._keepScroll = true; return render(); }
+  if (a === 'sendsel') return send([...S.sel].map(x => S.byKey[x]).filter(Boolean).reduce((acc, p) => acc.concat(p.files), []));
+  if (a === 'sendfmt') { const p = S.byKey[S.open]; if (!p) return; const f = p.files[Math.min(Math.max(S.ph, 0), p.files.length - 1)]; return f ? send([f], v) : null; }
+  if (a === 'sendone') { const p = S.byKey[S.open]; if (!p) return; return send(v === 'all' ? p.files : [p.files[Number(v)]].filter(Boolean)); }
+  if (a === 'hidetoast') { S.toast = null; return render(); }
+  if (a === 'gochat') { if (tg) tg.close(); return; }
+  if (a === 'mtab') { S.mtab = v; S.only = false; return render(); }
+  if (a === 'upload') return toast('Пришлите боту фото «' + v + '» файлом (📎 → «Файл»), в подписи — это название. Оно встанет сюда, а блюдо пропадёт из списка «без фото».', true);
+  if (a === 'retry') return boot();
+  if (a === 'reload') return boot(true);
+  if (a === 'setrest') return setRest(v);
+  if (a === 'rvload') return rvLoad();
+  if (a === 'rvpick') return rvSet(Number(v), null);
+  if (a === 'rvskip') { S.rvSkip++; S.rvOwn = false; S.rvLast = ''; return rvLoad(); }
+  if (a === 'rvagain') { S.rvSkip = 0; return rvLoad(); }
+  if (a === 'rvown') { S.rvOwn = !S.rvOwn; render(); const i = document.getElementById('rvown'); i && i.focus(); return; }
+  if (a === 'rvsave') { const i = document.getElementById('rvown'); const t = i ? i.value.trim() : ''; if (t.length < 2) return; return rvSet(null, t); }
+});
+document.addEventListener('change', e => { if (e.target && e.target.dataset && e.target.dataset.act === 'only') { S.only = e.target.checked; render(); } });
+let qTimer = null;
+document.addEventListener('input', e => { if (e.target && e.target.id === 'q') { S.q = e.target.value; if (S.q.trim() && S.sec !== 'all') S.sec = 'all'; // новый запрос ищем по всем разделам, а не только в открытом
+  clearTimeout(qTimer); qTimer = setTimeout(() => { S.limit = 60; refreshCatalog(); }, 150); } });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target && e.target.id === 'q') e.target.blur(); if (e.key === 'Enter' && e.target && e.target.id === 'rvown') { const t = e.target.value.trim(); if (t.length >= 2) rvSet(null, t); } if (e.key === 'Escape' && S.open) { S.open = null; render(); } });
+
+async function boot(quiet) {
+  if (!tg || !INIT) { S.stage = 'err'; S.err = 'notg'; return render(); }
+  if (!/^https:\/\//.test(SB) && !/^http:\/\/(127\.0\.0\.1|localhost)/.test(SB) || !KEY) { S.stage = 'err'; S.err = 'cfg'; return render(); }
+  if (!quiet || S.stage !== 'ok') { S.stage = 'load'; render(); }
+  S.loadedAt = Date.now();
+  try {
+    const r = await rpc('media_app_boot', { p_init: INIT });
+    if (!r || !r.ok) { S.stage = 'err'; S.err = (r && r.error) || 'x'; return render(); }
+    S.me = { role: r.role, name: r.name, review: r.review || 0, perms: r.perms || {} };
+    build(r.items || []);
+    for (const k of [...S.sel]) if (!S.byKey[k]) S.sel.delete(k);
+    if (S.open && !S.byKey[S.open]) S.open = null;
+    S.stage = 'ok';
+    if (!quiet && S.tour === undefined) S.tour = tourSeen() ? null : 0; // первый вход — показать обучение
+  } catch (e) { if (!quiet || S.stage !== 'ok') { S.stage = 'err'; S.err = e.message; } }
+  S._keepScroll = !!quiet; render();
+}
+// вернулись в каталог (например, после загрузки файлов в чат) — тихо подтянуть свежее
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.stage === 'ok' && Date.now() - (S.loadedAt || 0) > 30000) boot(true); });
+if (tg) {
+  try { tg.ready(); tg.expand(); tg.setHeaderColor && tg.setHeaderColor('#F9EFE3'); tg.setBackgroundColor && tg.setBackgroundColor('#F9EFE3'); if (tg.setBottomBarColor) tg.setBottomBarColor('#FFFFFF'); tg.disableVerticalSwipes && tg.disableVerticalSwipes(); } catch (e) {}
+  tg.BackButton && tg.BackButton.onClick(() => { if (S.open) { S.open = null; S._keepScroll = true; render(); } });
+}
+boot();
+</script>
+</body>
+</html>
