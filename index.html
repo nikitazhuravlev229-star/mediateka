@@ -313,7 +313,7 @@ const SEC_OF = { 'блюдо': 'dish', 'напиток': 'drink', 'макет': 
 const RESTS = [['all', 'Все'], ['rm', 'Рыба Моя'], ['jp', 'в Японии'], ['sage', 'Sage'], ['ww', 'Well Well'], ['ilg', 'I Like Grill']];
 const RLABEL = { rm: 'Рыба Моя', jp: 'в Японии', sage: 'Sage', ww: 'Well Well', ilg: 'I Like Grill' };
 const BOTH = 'Рыба Моя и Рыба Моя в Японии';
-const restCode = r => !r || r === BOTH ? 'all' : r === JP ? 'jp' : /^Рыба Моя/.test(r) ? 'rm' : r === 'Sage' ? 'sage' : r === 'Well Well' ? 'ww' : r === 'I Like Grill' ? 'ilg' : 'other';
+const restCode = r => r === BOTH ? 'all' : !r ? 'none' : r === JP ? 'jp' : /^Рыба Моя/.test(r) ? 'rm' : r === 'Sage' ? 'sage' : r === 'Well Well' ? 'ww' : r === 'I Like Grill' ? 'ilg' : 'other';
 const SHORT = r => !r ? '' : r === JP ? 'в Японии' : r;
 const SIGN = { jp: 'img/sign-jp.webp', rm: 'img/sign-rm.webp', sage: 'data:image/gif;base64,R0lGODlhAQABAAAAACw=', ww: 'data:image/gif;base64,R0lGODlhAQABAAAAACw=', ilg: 'data:image/gif;base64,R0lGODlhAQABAAAAACw=' };
 const SYN = [[/лосос|семг|форел/, 'красная рыба'], [/тунц|тунец/, 'красная рыба тунец'], [/угор|угр|унаги/, 'угорь унаги'], [/гребеш/, 'морепродукты'], [/краб|кревет|кальмар|осьминог|мид/, 'морепродукты'],
@@ -497,7 +497,7 @@ function fitHtml(f) {
 }
 function visible() {
   const words = norm(S.q).split(' ').filter(w => w.length >= 2 && !STOP.has(w)).map(stem);
-  const restOk = p => S.rest === 'all' || p.rc === 'all' || p.rc === S.rest;
+  const restOk = p => S.rest === 'all' || p.rc === S.rest || (p.rc === 'all' && (S.rest === 'rm' || S.rest === 'jp')); // без бренда — только во «Все»: чужие файлы не лезут в бренд
   let qOk = p => words.every(w => p.hay.some(h => h.startsWith(w)));
   const fmtOk = p => !S.fmt || p.files.some(f => fitsFmt(f, S.fmt));
   const base = S.pos.filter(p => restOk(p) && fmtOk(p));
