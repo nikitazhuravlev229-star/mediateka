@@ -404,9 +404,9 @@ function build(raw) {
 // ---------- отрисовка ----------
 function render() {
   if (S.stage !== 'ok') return renderState();
-  const html = S.tab === 'menu' ? renderMenu() : S.tab === 'help' ? renderHelp() : S.tab === 'review' ? renderReview() : S.tab === 'people' ? renderPeople() : renderCatalog();
+  const html = S.tab === 'menu' ? renderMenu() : S.tab === 'help' ? renderHelp() : S.tab === 'review' ? renderReview() : S.tab === 'people' ? renderPeople() : S.tab === 'sort' ? renderSort() : renderCatalog();
   const isCur = S.me && ['owner', 'admin', 'curator'].includes(S.me.role);
-  const tabs = [['cat', 'Каталог', ICO.grid], ['menu', 'Меню', ICO.menu], ['help', 'Помощь', ICO.help], ...(isCur ? [['review', 'Проверка', ICO.check]] : []), ...(can('people') ? [['people', 'Люди', ICO.people]] : [])];
+  const tabs = [['cat', 'Каталог', ICO.grid], ['menu', 'Меню', ICO.menu], ['help', 'Помощь', ICO.help], ...(isCur ? [['review', 'Проверка', ICO.check]] : []), ...(can('people') ? [['people', 'Люди', ICO.people]] : []), ...(S.me && S.me.role === 'owner' ? [['sort', 'Разбор', ICO.grid]] : [])];
   const scroll = document.querySelector('.body'); const top = scroll && S._keepScroll ? scroll.scrollTop : 0;
   $app.innerHTML = html + '<nav class="tabs" aria-label="Разделы">' + tabs.map(([id, l, ic]) => `<button data-act="tab" data-v="${id}"${S.tab === id ? ' aria-current="page"' : ''}>${ic}${l}${id === 'review' && S.me.review ? `<span class="dot">${S.me.review > 99 ? '99+' : S.me.review}</span>` : ''}</button>`).join('') + '</nav>' + renderOpen() + renderEdit() + renderPerson() + renderToast() + renderTour();
   if (S._backTo != null && !S.open) { const b = document.querySelector('.body'); if (b) b.scrollTop = S._backTo; S._backTo = null; S._keepScroll = false; }
@@ -709,6 +709,64 @@ function renderMenu() {
   }
   return `<header class="mh"><img class="koi" src="img/koi.webp" alt="" aria-hidden="true"><div class="brand" style="padding:0"><img src="img/wordmark.png" alt="Рыба Моя"><span class="kicker">Медиатека · меню</span></div>${tabsH}${head}</header><div class="band" aria-hidden="true"></div><div class="body" style="padding-top:4px">${body}</div>`;
 }
+
+// ---- «Разбор»: владелец сам решает судьбу каждого файла ----
+const SO_RESTS = ['Рыба Моя', 'Рыба Моя в Японии', 'Рыба Моя Тверская', 'Рыба Моя Китай-город', 'Рыба Моя Цветной', 'Рыба Моя Новинский', 'Sage', 'Well Well', 'I Like Grill', 'Perelman People', 'Кейтеринг'];
+const SO_SECS = ['блюдо', 'напиток', 'интерьер', 'фасад', 'макет', 'полиграфия', 'упаковка', 'логотип', 'иллюстрация', 'детали', 'меню', 'презентация', 'брендбук', 'документ', 'шрифт', 'событие', 'команда', 'гости', 'другое'];
+async function soLoad(keep) {
+  const o = S.so = Object.assign({ mode: 'todo', rest: '', sec: '', q: '', off: 0, items: [], total: 0, sel: new Set(), zoom: null }, S.so || {});
+  if (!keep) o.sel = new Set(); o.loading = true; o.error = null; render();
+  try { const r = await rpc('media_app_sort_list', { p_init: INIT, p_f: { mode: o.mode, rest: o.rest, sec: o.sec, q: o.q, off: o.off } });
+    if (r && r.ok) { o.items = r.items || []; o.total = r.total || 0; } else o.error = r && r.error === 'not_allowed' ? 'Разбор доступен только владельцу.' : 'Не получилось загрузить. Попробуйте ещё раз.';
+  } catch (e) { o.error = 'Нет связи. Попробуйте ещё раз.'; }
+  o.loading = false; render(); const b = document.querySelector('.body'); if (b && !keep) b.scrollTop = 0;
+}
+async function soApply(act, v) {
+  const o = S.so; if (!o || !o.sel.size) return; const ids = [...o.sel];
+  try { const r = await rpc('media_app_sort_apply', { p_init: INIT, p_ids: ids, p_a: { act, v: v || '' } });
+    if (!r || !r.ok) { toast('Не получилось. Попробуйте ещё раз.'); return; }
+    toast(act === 'trash' ? `В корзину: ${r.n}. Вернуть можно во вкладке «Корзина».` : act === 'restore' ? `Возвращено: ${r.n}.` : `Готово: ${r.n}.`);
+  } catch (e) { toast('Нет связи. Попробуйте ещё раз.'); return; }
+  if (o.mode === 'all') o.off = o.off; soLoad();
+}
+function renderSort() {
+  const o = S.so || { items: [], sel: new Set(), mode: 'todo', total: 0, off: 0 };
+  const opt = (list, cur, first) => `<option value="">${first}</option>` + list.map(x => `<option value="${esc(x)}"${cur === x ? ' selected' : ''}>${esc(x)}</option>`).join('');
+  const sel = 'style="flex:1;min-width:0;padding:10px 8px;border:1px solid var(--line,#d9cbb8);background:#fff;font:inherit;font-size:14px;border-radius:0"';
+  const btn = 'style="padding:11px 12px;border:1px solid #33221c;background:#fff;font:inherit;font-size:14px"';
+  const mb = n => n ? (n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',') + ' МБ' : Math.round(n / 1e3) + ' КБ') : '';
+  let grid = '';
+  if (o.loading && !o.items.length) grid = '<p style="font-size:14px">Загружаю…</p>';
+  else if (o.error) grid = `<div class="note"><p>${esc(o.error)}</p><button class="sec" data-act="soreload">Ещё раз</button></div>`;
+  else if (!o.items.length) grid = `<div class="note"><span class="tt">${o.mode === 'trash' ? 'Корзина пуста' : 'Здесь всё разобрано'}</span><p>Смените фильтр или вкладку.</p></div>`;
+  else { let dir = null;
+    grid = o.items.map(it => { const on = o.sel.has(it.id); const u = it.v ? SB + '/storage/v1/object/public/media-img/' + it.id + '-s.jpg?v=' + it.v : '';
+      const head = it.dir !== dir ? `<div style="grid-column:1/-1;font-size:12px;color:#8a6a3b;padding:10px 0 2px;word-break:break-word">${esc(it.dir || 'без папки')} <button data-act="sodir" data-v="${esc(it.dir || '')}" style="border:0;background:none;color:#a5241c;font:inherit;font-size:12px;text-decoration:underline;padding:0 0 0 6px">выбрать папку</button></div>` : ''; dir = it.dir;
+      return head + `<div style="position:relative;background:#fff;outline:${on ? '3px solid #a5241c' : '1px solid #e6dccd'};outline-offset:-1px">
+        <button data-act="sosel" data-v="${it.id}" aria-pressed="${on}" style="display:block;width:100%;padding:0;border:0;background:#f1e9dd;aspect-ratio:3/4">${u ? `<img src="${u}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block${on ? ';opacity:.55' : ''}">` : '<span style="font-size:12px;color:#8a6a3b">нет превью</span>'}</button>
+        <button data-act="sozoom" data-v="${it.id}" style="position:absolute;right:0;top:0;padding:6px 8px;border:0;background:rgba(51,34,28,.8);color:#fff;font:inherit;font-size:11px">крупнее</button>
+        <div style="padding:5px 6px 7px;font-size:11px;line-height:1.3;word-break:break-word"><b style="font-weight:500">${esc(it.t || it.f || 'без названия')}</b><br><span style="color:#6b5a50">${esc([it.r || 'без бренда', it.s || 'без раздела'].join(' · '))}<br>${esc([mb(it.sz), it.w && it.h ? it.w + '×' + it.h : ''].filter(Boolean).join(' · '))}</span></div></div>`; }).join('');
+    grid = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${grid}</div>`; }
+  const pages = o.total > 60 || o.off ? `<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;margin:14px 0"><button ${btn} data-act="sopage" data-v="-60"${o.off ? '' : ' disabled'}>Назад</button><span style="font-size:13px">${o.off + 1}–${Math.min(o.off + 60, o.total)} из ${o.total}</span><button ${btn} data-act="sopage" data-v="60"${o.off + 60 < o.total ? '' : ' disabled'}>Дальше</button></div>` : '';
+  const n = o.sel.size;
+  const bar = n ? `<div style="position:sticky;bottom:0;margin:0 -16px -20px;padding:10px 16px 12px;background:#f6ede1;border-top:1px solid #33221c;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center"><b style="font-size:14px;flex:1">Выбрано: ${n}</b><button ${btn} data-act="sonone">Снять</button></div>
+      ${o.mode === 'trash' ? `<button class="primary" data-act="soact" data-v="restore">Вернуть в медиатеку</button>` : `<div style="display:flex;gap:8px"><button class="primary" style="flex:1" data-act="soact" data-v="trash">В корзину</button><button ${btn} style="flex:1" data-act="soact" data-v="ok">Оставить как есть</button></div>
+      <div style="display:flex;gap:8px"><select ${sel} data-so="rest">${opt(SO_RESTS, '', 'Перенести в бренд…')}</select><select ${sel} data-so="sec">${opt(SO_SECS, '', 'Сменить раздел…')}</select></div>
+      <div style="display:flex;gap:8px"><input id="so_name" placeholder="Подписать: имя человека или название" style="flex:1;min-width:0;padding:10px 8px;border:1px solid #d9cbb8;font:inherit;font-size:14px;border-radius:0"><button ${btn} data-act="soname">Подписать</button></div>`}</div>` : '';
+  const zoom = o.zoom ? (() => { const it = o.items.find(x => x.id === o.zoom); if (!it) return ''; const u = SB + '/storage/v1/object/public/media-img/' + it.id + (it.m ? '-m.jpg' : '-s.jpg') + '?v=' + it.v;
+    return `<div data-act="sozoomx" style="position:fixed;inset:0;z-index:50;background:rgba(20,12,10,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px"><img src="${u}" alt="" style="max-width:100%;max-height:82%;object-fit:contain"><p style="color:#fff;font-size:13px;text-align:center;margin:10px 0 0;word-break:break-word">${esc(it.t || it.f || '')}<br>${esc(it.dir || '')}</p><p style="color:#d9cbb8;font-size:12px;margin:8px 0 0">Нажмите, чтобы закрыть</p></div>`; })() : '';
+  return `<div class="body"><h1 class="h" style="margin:4px 0 10px">Разбор</h1>
+    <div class="seg" role="group" style="margin-bottom:8px">${[['todo', 'Не разобрано'], ['all', 'Все файлы'], ['trash', 'Корзина']].map(([id, l]) => `<button data-act="somode" data-v="${id}" aria-pressed="${o.mode === id}">${l}</button>`).join('')}</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px"><select ${sel} data-so="frest"><option value="">Все бренды</option><option value="none"${o.rest === 'none' ? ' selected' : ''}>Без бренда</option>${SO_RESTS.filter(x => !/^Рыба Моя (Т|К|Ц|Н)/.test(x)).map(x => `<option value="${esc(x)}"${o.rest === x ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>
+      <select ${sel} data-so="fsec"><option value="">Все разделы</option><option value="none"${o.sec === 'none' ? ' selected' : ''}>Без раздела</option>${SO_SECS.map(x => `<option value="${esc(x)}"${o.sec === x ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select></div>
+    <div style="display:flex;gap:8px;margin-bottom:6px"><input id="so_q" value="${esc(o.q || '')}" placeholder="Папка или название, например «Sage/01 Фотографии»" style="flex:1;min-width:0;padding:10px 8px;border:1px solid #d9cbb8;font:inherit;font-size:14px;border-radius:0"><button ${btn} data-act="soq">Найти</button></div>
+    <p style="font-size:13px;color:#6b5a50;margin:6px 0 4px">${o.total} файлов${o.loading ? ' · обновляю…' : ''}. Нажмите на фото, чтобы выбрать; затем действие внизу. ${o.items.length ? '<button data-act="soall" style="border:0;background:none;color:#a5241c;font:inherit;text-decoration:underline;padding:0">Выбрать всю страницу</button>' : ''}</p>
+    ${grid}${pages}${bar}</div>${zoom}`;
+}
+document.addEventListener('change', e => { const el = e.target.closest('[data-so]'); if (!el || !S.so) return; const k = el.dataset.so, v = el.value;
+  if (k === 'frest') { S.so.rest = v; S.so.off = 0; soLoad(); } else if (k === 'fsec') { S.so.sec = v; S.so.off = 0; soLoad(); }
+  else if (v && k === 'rest') soApply('rest', v); else if (v && k === 'sec') soApply('sec', v); });
 function renderReview() {
   const r = S.rv, it = r && r.item;
   let body = '';
@@ -787,7 +845,21 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act, v = b.dataset.v, k = b.dataset.k;
   if (a === 'only') return; // флажок — в change
-  if (a === 'tab') { S.tab = v; S.open = null; S.toast = null; if (v === 'review' && !S.rv) rvLoad(); render(); document.querySelector('.body') && (document.querySelector('.body').scrollTop = 0); return; }
+  if (a.startsWith('so') && S.so) { const o = S.so;
+    if (a === 'sosel') { o.sel.has(v) ? o.sel.delete(v) : o.sel.add(v); S._keepScroll = true; haptic(); return render(); }
+    if (a === 'soall') { o.items.forEach(it => o.sel.add(it.id)); S._keepScroll = true; return render(); }
+    if (a === 'sodir') { o.items.filter(it => (it.dir || '') === v).forEach(it => o.sel.add(it.id)); S._keepScroll = true; return render(); }
+    if (a === 'sonone') { o.sel = new Set(); S._keepScroll = true; return render(); }
+    if (a === 'sozoom') { o.zoom = v; S._keepScroll = true; return render(); }
+    if (a === 'sozoomx') { o.zoom = null; S._keepScroll = true; return render(); }
+    if (a === 'somode') { o.mode = v; o.off = 0; return soLoad(); }
+    if (a === 'sopage') { o.off = Math.max(0, o.off + Number(v)); return soLoad(); }
+    if (a === 'soq') { o.q = (document.getElementById('so_q') || {}).value || ''; o.off = 0; return soLoad(); }
+    if (a === 'soreload') return soLoad();
+    if (a === 'soact') return soApply(v);
+    if (a === 'soname') { const t = ((document.getElementById('so_name') || {}).value || '').trim(); if (!t) return toast('Напишите имя или название.'); return soApply('name', t); }
+  }
+  if (a === 'tab') { S.tab = v; S.open = null; S.toast = null; if (v === 'review' && !S.rv) rvLoad(); if (v === 'sort' && !S.so) soLoad(); render(); document.querySelector('.body') && (document.querySelector('.body').scrollTop = 0); return; }
   if (a === 'rest') { S.rest = v; S.limit = 60; haptic(); return render(); }
   if (a === 'fmt') { S.fmt = S.fmt === v ? '' : v; S.limit = 60; haptic(); return render(); }
   if (a === 'tour') { S.tour = 0; S.open = null; return render(); }
