@@ -306,10 +306,10 @@ const ICO = {
   people: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 5.2a3.5 3.5 0 010 5.6M18.5 14.6c1.9.9 3 2.7 3 5.4"/></svg>',
   lens: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3A2219" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>'
 };
-const SECS = [['all', 'Всё'], ['dish', 'Блюда'], ['drink', 'Напитки'], ['interior', 'Интерьер'], ['layout', 'Макеты'], ['print', 'Полиграфия'], ['pack', 'Упаковка'], ['logo', 'Логотипы'], ['art', 'Иллюстрации'], ['detail', 'Детали'], ['menu', 'Меню'], ['deck', 'Презентации'], ['brand', 'Брендбук'], ['docs', 'Документы'], ['font', 'Шрифты'], ['people', 'Люди и события'], ['other', 'Другое']];
+const SECS = [['all', 'Всё'], ['dish', 'Блюда'], ['drink', 'Напитки'], ['interior', 'Интерьер'], ['layout', 'Макеты'], ['print', 'Полиграфия'], ['pack', 'Упаковка'], ['logo', 'Логотипы'], ['art', 'Иллюстрации'], ['detail', 'Детали'], ['menu', 'Меню'], ['deck', 'Презентации'], ['brand', 'Брендбук'], ['docs', 'Документы'], ['font', 'Шрифты'], ['event', 'Мероприятия'], ['people', 'Люди'], ['other', 'Другое']];
 const SECN = Object.fromEntries(SECS);
 const SEC_OF = { 'блюдо': 'dish', 'напиток': 'drink', 'макет': 'layout', 'баннер': 'layout', 'презентация': 'deck', 'полиграфия': 'print', 'упаковка': 'pack', 'иллюстрация': 'art', 'детали': 'detail', 'документ': 'docs', 'интерьер': 'interior', 'фасад': 'interior', 'логотип': 'logo', 'меню': 'menu', 'брендбук': 'brand', 'шрифт': 'font', 'шаблон': 'deck',
-  'шеф': 'people', 'команда': 'people', 'гости': 'people', 'событие': 'people' };
+  'шеф': 'people', 'команда': 'people', 'гости': 'people', 'событие': 'event' };
 const RESTS = [['all', 'Все'], ['rm', 'Рыба Моя'], ['jp', 'в Японии'], ['sage', 'Sage'], ['ww', 'Well Well'], ['ilg', 'I Like Grill']];
 const RLABEL = { rm: 'Рыба Моя', jp: 'в Японии', sage: 'Sage', ww: 'Well Well', ilg: 'I Like Grill' };
 const BOTH = 'Рыба Моя и Рыба Моя в Японии';
@@ -407,7 +407,10 @@ function render() {
   const tabs = [['cat', 'Каталог', ICO.grid], ['menu', 'Меню', ICO.menu], ['help', 'Помощь', ICO.help], ...(isCur ? [['review', 'Проверка', ICO.check]] : []), ...(can('people') ? [['people', 'Люди', ICO.people]] : [])];
   const scroll = document.querySelector('.body'); const top = scroll && S._keepScroll ? scroll.scrollTop : 0;
   $app.innerHTML = html + '<nav class="tabs" aria-label="Разделы">' + tabs.map(([id, l, ic]) => `<button data-act="tab" data-v="${id}"${S.tab === id ? ' aria-current="page"' : ''}>${ic}${l}${id === 'review' && S.me.review ? `<span class="dot">${S.me.review > 99 ? '99+' : S.me.review}</span>` : ''}</button>`).join('') + '</nav>' + renderOpen() + renderEdit() + renderPerson() + renderToast() + renderTour();
-  if (S._keepScroll) { const b = document.querySelector('.body'); if (b) b.scrollTop = top; S._keepScroll = false; }
+  if (S._backTo != null && !S.open) { const b = document.querySelector('.body'); if (b) b.scrollTop = S._backTo; S._backTo = null; S._keepScroll = false; }
+  else if (S._keepScroll) { const b = document.querySelector('.body'); if (b) b.scrollTop = top; S._keepScroll = false; }
+  else if (S.open && S._openedNow) { const b = document.querySelector('.body'); if (b) b.scrollTop = 0; }
+  S._openedNow = false;
   if (tg && tg.BackButton) { if (S.open) tg.BackButton.show(); else tg.BackButton.hide(); }
   if (S._focusQ) { const i = document.getElementById('q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } S._focusQ = false; }
 }
@@ -580,7 +583,7 @@ function renderOpen() {
   return `<div class="ov" role="dialog" aria-label="${esc(p.title)}"><div class="ovh"><button class="back" data-act="close">${ICO.back}Каталог</button><span class="kicker">${esc(SECN[p.sec])}</span></div><div class="ovb">${hero}${strip}
     <div class="info"><div style="display:flex;flex-direction:column;gap:6px"><h1>${esc(p.title)}</h1>${meta ? `<span class="meta">${esc(meta)}</span>` : ''}</div>
     ${photoLike ? `<div class="q${low ? ' low' : ''}"><span>${N > 1 ? (/^logo/.test(p.sec) ? 'Вариант ' : 'Файл ') + (i + 1) + ' из ' + N + (cur.title && cur.title !== p.title ? ': ' + esc(cur.title) : '') : esc(ext(cur))}</span><span>${low ? 'только сжатая копия' : 'оригинал'}</span></div>` : ''}
-    ${photoLike && ['dish', 'drink', 'interior', 'people', 'detail', 'other'].includes(p.sec) ? fitHtml(cur) : isPic(cur) && cur.w && cur.h && !/^logo/.test(p.sec) ? `<div class="fit"><b>${esc(useOf(cur.w, cur.h))} · ${cur.w}×${cur.h} px</b>${N > 1 ? '<small>У этой позиции несколько файлов — листайте, размер у каждого свой.</small>' : ''}</div>` : ''}
+    ${photoLike && ['dish', 'drink', 'interior', 'people', 'event', 'detail', 'other'].includes(p.sec) ? fitHtml(cur) : isPic(cur) && cur.w && cur.h && !/^logo/.test(p.sec) ? `<div class="fit"><b>${esc(useOf(cur.w, cur.h))} · ${cur.w}×${cur.h} px</b>${N > 1 ? '<small>У этой позиции несколько файлов — листайте, размер у каждого свой.</small>' : ''}</div>` : ''}
     ${low ? '<p class="warn">Оригинала этого снимка в медиатеке нет — придёт сжатым, с пометкой. Попросите исходник у фотографа и пришлите боту файлом.</p>' : ''}
     <div class="acts"><button class="primary" data-act="sendone" data-v="all"${S.sending ? ' disabled' : ''}><span>${S.sending ? 'Отправляю…' : esc(sendL)}</span><small>${esc(sendN)}</small></button>
       ${N > 1 ? `<button class="sec" data-act="sendone" data-v="${i}"${S.sending ? ' disabled' : ''}>Только этот — № ${i + 1}</button>` : ''}
@@ -794,8 +797,8 @@ document.addEventListener('click', e => {
   if (a === 'sec') { S.sec = v; S.secsOpen = false; S.limit = 60; haptic(); render(); const c = document.querySelector('.chips [aria-pressed=true]'); c && c.scrollIntoView({ inline: 'center', block: 'nearest' }); return; }
   if (a === 'clearq') { S.q = ''; S.limit = 60; S._focusQ = true; return render(); }
   if (a === 'more') { S.limit += 60; S._keepScroll = true; return render(); }
-  if (a === 'open') { S.open = k; const bp = S.byKey[k], bi = bp ? bestFor(bp, S.fmt) : -1; S.ph = bi >= 0 ? bi : 0; return render(); }
-  if (a === 'close') { S.open = null; S._keepScroll = true; return render(); }
+  if (a === 'open') { if (!S.open) { const lb = document.querySelector('.body'); S._listAt = lb ? lb.scrollTop : 0; } S._openedNow = true; S.open = k; const bp = S.byKey[k], bi = bp ? bestFor(bp, S.fmt) : -1; S.ph = bi >= 0 ? bi : 0; return render(); }
+  if (a === 'close') { S.open = null; S._backTo = S._listAt || 0; return render(); }
   if (a === 'ph') { S.ph = Number(v) || 0; return render(); }
   if (a === 'sel') { if (S.sel.has(k)) S.sel.delete(k); else S.sel.add(k); haptic(); S._keepScroll = true; return render(); }
   if (a === 'selall') { const ks = S._shown || [], all = ks.length && ks.every(x => S.sel.has(x)); for (const x of ks) all ? S.sel.delete(x) : S.sel.add(x); haptic(); S._keepScroll = true; return render(); }
@@ -844,7 +847,7 @@ async function boot(quiet) {
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.stage === 'ok' && Date.now() - (S.loadedAt || 0) > 30000) boot(true); });
 if (tg) {
   try { tg.ready(); tg.expand(); tg.setHeaderColor && tg.setHeaderColor('#F9EFE3'); tg.setBackgroundColor && tg.setBackgroundColor('#F9EFE3'); if (tg.setBottomBarColor) tg.setBottomBarColor('#FFFFFF'); tg.disableVerticalSwipes && tg.disableVerticalSwipes(); } catch (e) {}
-  tg.BackButton && tg.BackButton.onClick(() => { if (S.open) { S.open = null; S._keepScroll = true; render(); } });
+  tg.BackButton && tg.BackButton.onClick(() => { if (S.open) { S.open = null; S._backTo = S._listAt || 0; render(); } });
 }
 boot();
 </script>
