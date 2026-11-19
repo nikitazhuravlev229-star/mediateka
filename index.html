@@ -306,7 +306,7 @@ const ICO = {
   people: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 5.2a3.5 3.5 0 010 5.6M18.5 14.6c1.9.9 3 2.7 3 5.4"/></svg>',
   lens: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3A2219" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>'
 };
-const SECS = [['all', 'Всё'], ['dish', 'Блюда'], ['drink', 'Напитки'], ['interior', 'Интерьер'], ['layout', 'Макеты'], ['print', 'Полиграфия'], ['pack', 'Упаковка'], ['logo', 'Логотипы'], ['art', 'Иллюстрации'], ['detail', 'Детали'], ['menu', 'Меню'], ['deck', 'Презентации'], ['brand', 'Брендбук'], ['docs', 'Документы'], ['font', 'Шрифты'], ['event', 'Мероприятия'], ['people', 'Люди'], ['other', 'Другое']];
+const SECS = [['all', 'Всё'], ['dish', 'Блюда'], ['drink', 'Напитки'], ['interior', 'Интерьер'], ['layout', 'Макеты'], ['print', 'Полиграфия'], ['pack', 'Упаковка'], ['logo', 'Логотипы'], ['art', 'Иллюстрации'], ['detail', 'Детали'], ['menu', 'Меню'], ['deck', 'Презентации'], ['collab', 'Коллаборации'], ['brand', 'Брендбук'], ['docs', 'Документы'], ['font', 'Шрифты'], ['event', 'Мероприятия'], ['people', 'Люди'], ['other', 'Другое']];
 const SECN = Object.fromEntries(SECS);
 const SEC_OF = { 'блюдо': 'dish', 'напиток': 'drink', 'макет': 'layout', 'баннер': 'layout', 'презентация': 'deck', 'полиграфия': 'print', 'упаковка': 'pack', 'иллюстрация': 'art', 'детали': 'detail', 'документ': 'docs', 'интерьер': 'interior', 'фасад': 'interior', 'логотип': 'logo', 'меню': 'menu', 'брендбук': 'brand', 'шрифт': 'font', 'шаблон': 'deck',
   'шеф': 'people', 'команда': 'people', 'гости': 'people', 'событие': 'event' };
@@ -350,6 +350,7 @@ function build(raw) {
   const map = new Map();
   for (const it of items) {
     let sec = SEC_OF[it.section] || 'other'; const rc = restCode(it.restaurant);
+    if (/коллаборация/.test(String(it.tags || '')) && !['dish', 'drink', 'interior', 'event', 'people', 'detail', 'font', 'brand', 'other'].includes(sec)) sec = 'collab'; // коллаборации — свой раздел у каждого бренда
     const vec = sec === 'logo' && /svg|pdf|postscript|illustrator/i.test(it.mime || ''); // одна вкладка «Логотипы», внутри две группы
     const key = sec + '|' + (it.restaurant || '') + '|' + norm(it.title);
     let p = map.get(key);
@@ -375,6 +376,7 @@ function build(raw) {
       else if (sec === 'brand') group = 'Брендбук и фирменный стиль';
       else if (sec === 'font') { group = it.restaurant ? 'Шрифты — ' + it.restaurant : 'Шрифты общие'; order = [it.restaurant === JP ? 2 : it.restaurant ? 1 : 3, 0, it.title]; }
       else if (sec === 'deck') group = 'Шаблоны и презентации';
+      else if (sec === 'collab') group = 'Коллаборации' + (it.restaurant ? ' — ' + it.restaurant : '');
       else group = it.section ? it.section[0].toUpperCase() + it.section.slice(1) : 'Разное';
       p = { key, sec, rc, restaurant: it.restaurant, title: it.title, group, order, files: [] };
       map.set(key, p);
